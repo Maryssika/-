@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'Настройки | ОВЗ Платформа'">Настройки</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body { background-color: #f9fbfd; }
+    .card { border-radius: 1.25rem; border: none; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05); }
+    .btn-rounded { border-radius: 2rem; padding: 0.6rem 1.4rem; }
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card p-4">
+        <div class="d-flex align-items-center mb-4">
+          <a href="/student/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill me-3">
+            <i class="bi bi-arrow-left"></i> Назад
+          </a>
+          <h1 class="h3 mb-0">Настройки профиля</h1>
+        </div>
+
+        <form action="/settings/update" method="post">
+          <div class="mb-3">
+            <label for="fullName" class="form-label fw-semibold">ФИО</label>
+            <input type="text" class="form-control form-control-lg" id="fullName" name="fullName"
+                   th:value="${user.fullName}" placeholder="Иванов Иван Иванович">
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label fw-semibold">Email</label>
+            <input type="email" class="form-control form-control-lg" id="email" name="email"
+                   th:value="${user.email}" readonly disabled>
+            <small class="text-secondary">Email нельзя изменить.</small>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Сменить пароль</label>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <input type="password" class="form-control" name="newPassword" placeholder="Новый пароль">
+              </div>
+              <div class="col-md-6">
+                <input type="password" class="form-control" name="confirmPassword" placeholder="Подтвердите пароль">
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-semibold mb-3">Настройки доступности</h5>
+          <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="highContrastDefault" name="highContrast">
+            <label class="form-check-label" for="highContrastDefault">Высокая контрастность (по умолчанию)</label>
+          </div>
+          <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="subtitlesDefault" name="subtitles">
+            <label class="form-check-label" for="subtitlesDefault">Субтитры (по умолчанию)</label>
+          </div>
+          <div class="mb-3">
+            <label for="fontSizeDefault" class="form-label">Размер шрифта по умолчанию</label>
+            <select class="form-select" id="fontSizeDefault" name="fontSize">
+              <option value="100%">Обычный</option>
+              <option value="130%">Крупный</option>
+              <option value="160%">Очень крупный</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-rounded w-100 mt-3">
+            <i class="bi bi-check-circle me-2"></i>Сохранить изменения
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

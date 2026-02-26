@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+  <meta name="description" content="Регистрация на образовательной платформе для детей с ОВЗ">
+  <title th:text="'Регистрация | ОВЗ Платформа'">Регистрация | ОВЗ Платформа</title>
+
+  <!-- Bootstrap 5 CSS (стабильная версия) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Кастомные стили для доступности и удобства -->
+  <style>
+    :root {
+        --focus-outline: 3px solid #ffbf47;
+    }
+    body {
+        background-color: #f9fbfd;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    a:focus, button:focus, .btn:focus, .form-control:focus, .form-select:focus {
+        outline: var(--focus-outline) !important;
+        outline-offset: 4px !important;
+        box-shadow: none !important;
+    }
+    .card {
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+    }
+    .btn {
+        padding: 0.6rem 1.4rem;
+        border-radius: 2rem;
+        font-weight: 500;
+    }
+    .form-control, .form-select {
+        border-radius: 0.75rem;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+    }
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    .text-danger {
+        font-size: 0.95rem;
+    }
+    /* Адаптация для высокой контрастности (может быть активирована через скрипт) */
+    .high-contrast {
+        background-color: black !important;
+        color: yellow !important;
+    }
+    .high-contrast .card {
+        background-color: #1a1a1a !important;
+        border: 2px solid yellow;
+    }
+    .high-contrast .btn-primary {
+        background-color: #000080 !important;
+        border-color: yellow !important;
+        color: yellow !important;
+    }
+    .high-contrast a {
+        color: yellow !important;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Навигация (мини-шапка) -->
+<nav class="navbar navbar-expand-lg bg-white py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="bi bi-book-half me-2" style="font-size: 1.8rem;"></i>
+      ОВЗ Платформа
+    </a>
+    <div class="ms-auto">
+      <a href="/login" class="btn btn-outline-primary rounded-pill px-4">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Вход
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Основной контент -->
+<main class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus fs-1 text-primary"></i>
+          <h1 class="h2 fw-bold mt-3">Регистрация</h1>
+          <p class="text-secondary">Создайте аккаунт для доступа к платформе</p>
+        </div>
+
+        <!-- Форма регистрации -->
+        <form th:action="@{/register}" th:object="${userDto}" method="post" novalidate>
+          <!-- CSRF токен (автоматически вставится благодаря Thymeleaf) -->
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+          <!-- Общая ошибка (например, дубликат email) -->
+          <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${error}">Ошибка регистрации</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light" id="basic-addon1"><i class="bi bi-envelope"></i></span>
+              <input type="email" th:field="*{email}" class="form-control" id="email"
+                     placeholder="example@mail.ru" aria-label="Email" autocomplete="email">
+            </div>
+            <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- ФИО -->
+          <div class="mb-3">
+            <label for="fullName" class="form-label">ФИО</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+              <input type="text" th:field="*{fullName}" class="form-control" id="fullName"
+                     placeholder="Иванов Иван Иванович" aria-label="ФИО" autocomplete="name">
+            </div>
+            <div th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- Пароль -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+              <input type="password" th:field="*{password}" class="form-control" id="password"
+                     placeholder="Минимум 8 символов" aria-label="Пароль" autocomplete="new-password">
+            </div>
+            <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- Подтверждение пароля -->
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" th:field="*{confirmPassword}" class="form-control" id="confirmPassword"
+                     placeholder="Повторите пароль" aria-label="Подтверждение пароля" autocomplete="new-password">
+            </div>
+            <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- Роль пользователя -->
+          <div class="mb-3">
+            <label for="role" class="form-label">Вы — *</label>
+            <select th:field="*{role}" id="role" class="form-select" aria-label="Роль">
+              <option value="" disabled selected>— Выберите роль —</option>
+              <option th:each="role : ${T(com.ovz.platform.models.UserRole).values()}"
+                      th:value="${role.name()}" th:text="${role.displayName}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- Блок выбора типа нарушения (скрыт, показывается только при выборе STUDENT) -->
+          <div id="disabilityBlock" class="mb-4" style="display: none;">
+            <label for="disabilityType" class="form-label fw-semibold">Тип нарушения развития</label>
+            <select th:field="*{disabilityType}" id="disabilityType" class="form-select">
+              <option value="" selected>— Выберите (необязательно) —</option>
+              <option th:each="type : ${disabilityTypes}"
+                      th:value="${type.name()}" th:text="${type.displayName}"></option>
+            </select>
+            <small class="text-secondary">Задания будут подобраны с учётом ваших особенностей.</small>
+            <div th:if="${#fields.hasErrors('disabilityType')}" th:errors="*{disabilityType}" class="text-danger small mt-1"></div>
+          </div>
+
+          <!-- Согласие на обработку данных (пример) -->
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="agreement" required>
+            <label class="form-check-label" for="agreement">
+              Я согласен на обработку персональных данных
+            </label>
+          </div>
+
+          <!-- Кнопка отправки -->
+          <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+            <i class="bi bi-check-circle me-2"></i> Зарегистрироваться
+          </button>
+        </form>
+
+        <!-- Ссылка на страницу входа -->
+        <div class="text-center mt-4">
+          <span class="text-secondary">Уже есть аккаунт?</span>
+          <a href="/login" class="text-decoration-none fw-semibold ms-1">Войдите</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Подвал -->
+<footer class="bg-white border-top mt-5 py-4">
+  <div class="container text-center">
+    <span class="text-secondary">© 2026 ОВЗ Платформа. Все права защищены.</span>
+  </div>
+</footer>
+
+<!-- Bootstrap JS для работы дропдаунов, вкладок и т.д. -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Скрипт для управления видимостью блока типа нарушения и прочие улучшения -->
+<script>
+  (function() {
+      'use strict';
+
+      // --- Показ/скрытие блока выбора типа нарушения в зависимости от роли ---
+      function toggleDisabilityBlock() {
+          const roleSelect = document.getElementById('role');
+          const disabilityBlock = document.getElementById('disabilityBlock');
+          if (!roleSelect || !disabilityBlock) return;
+
+          if (roleSelect.value === 'STUDENT') {
+              disabilityBlock.style.display = 'block';
+              // Сделаем поле обязательным? Можно добавить required динамически
+              // Но мы не делаем его обязательным, так как необязательное поле.
+          } else {
+              disabilityBlock.style.display = 'none';
+              // Сбросить значение при скрытии, чтобы не отправлять лишнее
+              const disabilitySelect = document.getElementById('disabilityType');
+              if (disabilitySelect) disabilitySelect.value = '';
+          }
+      }
+
+      // При загрузке страницы
+      document.addEventListener('DOMContentLoaded', function() {
+          toggleDisabilityBlock();
+          const roleSelect = document.getElementById('role');
+          if (roleSelect) {
+              roleSelect.addEventListener('change', toggleDisabilityBlock);
+          }
+      });
+
+      // --- Проверка Bootstrap на загрузку ---
+      if (typeof bootstrap === 'undefined') {
+          console.error('Bootstrap JS не загружен');
+      } else {
+          console.log('Bootstrap JS загружен');
+      }
+
+      // --- Дополнительно: сохранение выбора размера шрифта (доступность) ---
+      // Применим сохранённые настройки, если есть
+      const savedFontSize = localStorage.getItem('fontSize');
+      if (savedFontSize) {
+          document.documentElement.style.fontSize = savedFontSize;
+      }
+
+      // Можно добавить кнопки изменения размера шрифта где-нибудь в меню,
+      // но для простоты регистрации опустим. При желании разместить в шапке.
+  })();
+</script>
+
+</body>
+</html>

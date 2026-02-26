@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${title}"></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .nav-link.active {
+        font-weight: bold;
+        color: #0d6efd !important;
+    }
+    .section {
+        padding: 80px 0 40px 0;
+    }
+    .task-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .task-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    .animal-card {
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .animal-card:hover {
+        border-color: #4a6bff;
+        background-color: #f0f7ff;
+        transform: translateY(-3px);
+    }
+    .animal-card.selected {
+        border-color: #4a6bff;
+        background-color: #e7f1ff;
+    }
+    .animal-card.correct {
+        border-color: #28a745;
+        background-color: #d4edda;
+    }
+    .animal-card.incorrect {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+    }
+    .sound-button {
+        padding: 20px 40px;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        border: 3px solid #4a6bff;
+        background: linear-gradient(135deg, #4a6bff, #6c8cff);
+        color: white;
+        transition: all 0.3s;
+    }
+    .sound-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(74, 107, 255, 0.4);
+    }
+    .sound-button:active {
+        transform: scale(0.95);
+    }
+    .feedback {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: none;
+    }
+    .feedback.correct {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    .feedback.incorrect {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    .score-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4a6bff;
+    }
+  </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Платформа для детей с ОВЗ</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo">Демоверсия</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/demo/audio-task">Аудиальное задание</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo/color-task">Цветовое задание</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo/puzzle-task">Пазл</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="section">
+  <div class="container">
+    <div class="task-container">
+      <!-- Информация о задании -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h1 th:text="${taskName}">Угадай животное по звуку</h1>
+            <p class="lead" th:text="${taskDescription}">Послушайте звук и выберите правильное животное</p>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-primary" th:text="${category}">Для слабовидящих детей</span>
+            <div class="score-display mt-2">
+              Очки: <span id="score">0</span>/3
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основное задание -->
+      <div class="task-card">
+        <div class="text-center mb-4">
+          <h3>🎵 Слушайте внимательно!</h3>
+          <p>Нажмите на кнопку, чтобы прослушать звук животного, затем выберите правильный вариант</p>
+
+          <button class="sound-button mb-4" onclick="playAnimalSound()" id="playSoundBtn">
+            <span style="font-size: 24px;">🔊</span> Воспроизвести звук животного
+          </button>
+
+          <div class="alert alert-info">
+            <strong>Подсказка:</strong> Вы можете прослушать звук несколько раз
+          </div>
+        </div>
+
+        <!-- Варианты ответов -->
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3">
+            <div class="animal-card" onclick="selectAnimal('dog')">
+              <div class="mb-2">
+                <div style="font-size: 48px;">🐶</div>
+              </div>
+              <h4>Собака</h4>
+              <p>Гав-гав!</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="animal-card" onclick="selectAnimal('cat')">
+              <div class="mb-2">
+                <div style="font-size: 48px;">🐱</div>
+              </div>
+              <h4>Кошка</h4>
+              <p>Мяу-мяу!</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="animal-card" onclick="selectAnimal('cow')">
+              <div class="mb-2">
+                <div style="font-size: 48px;">🐮</div>
+              </div>
+              <h4>Корова</h4>
+              <p>Му-у-у!</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="animal-card" onclick="selectAnimal('bird')">
+              <div class="mb-2">
+                <div style="font-size: 48px;">🐦</div>
+              </div>
+              <h4>Птичка</h4>
+              <p>Чик-чирик!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Обратная связь -->
+        <div id="feedback" class="feedback" style="display: none;">
+          <div id="feedbackContent"></div>
+          <button class="btn btn-sm btn-outline-secondary mt-2" onclick="nextQuestion()">Следующий вопрос →</button>
+        </div>
+
+        <!-- Прогресс -->
+        <div class="progress mb-3" style="height: 20px;">
+          <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <small>Вопрос <span id="currentQuestion">1</span> из 3</small>
+          <small id="timer">Времени прошло: 0 сек</small>
+        </div>
+      </div>
+
+      <!-- Инструкции -->
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5>📋 Инструкции для педагогов и родителей:</h5>
+          <ul>
+            <li>Это задание развивает слуховое восприятие и память</li>
+            <li>Для слабовидящих детей: звук воспроизводится автоматически при загрузке страницы</li>
+            <li>Можно увеличить громкость звука в настройках устройства</li>
+            <li>Поощряйте ребенка за правильные ответы</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Навигация -->
+      <div class="d-flex justify-content-between mt-4">
+        <div>
+          <a href="/demo" class="btn btn-secondary">← Вернуться к демоверсии</a>
+        </div>
+        <div>
+          <a href="/demo/color-task" class="btn btn-primary">Следующее задание →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Футер -->
+<footer class="bg-dark text-white py-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Образовательная платформа для детей с ОВЗ</h5>
+        <p>Инклюзивное образование для всех</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <p>Контакты: support@platforma-ovz.ru</p>
+        <p>© 2024 Все права защищены</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Данные задания
+  const questions = [
+      { sound: 'dog', correct: 'dog', description: 'Это была собака!' },
+      { sound: 'cat', correct: 'cat', description: 'Правильно, это кошка!' },
+      { sound: 'bird', correct: 'bird', description: 'Молодец, это птичка!' }
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+  let timeElapsed = 0;
+  let timerInterval;
+  let selectedAnimal = null;
+
+  // Таймер
+  function startTimer() {
+      timerInterval = setInterval(() => {
+          timeElapsed++;
+          document.getElementById('timer').textContent = `Времени прошло: ${timeElapsed} сек`;
+      }, 1000);
+  }
+
+  // Воспроизведение звука
+  function playAnimalSound() {
+      const sound = questions[currentQuestion].sound;
+      // В реальном приложении здесь было бы воспроизведение аудиофайла
+      const btn = document.getElementById('playSoundBtn');
+      btn.innerHTML = '<span style="font-size: 24px;">🔊</span> Звук воспроизводится...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+          btn.innerHTML = '<span style="font-size: 24px;">🔊</span> Воспроизвести звук снова';
+          btn.disabled = false;
+      }, 1000);
+
+      // Озвучивание текста для слабовидящих
+      speak(`Воспроизводится звук животного. Вопрос ${currentQuestion + 1} из 3`);
+  }
+
+  // Выбор животного
+  function selectAnimal(animal) {
+      if (selectedAnimal) return; // Не позволяем выбирать после ответа
+
+      selectedAnimal = animal;
+
+      // Убираем выделение у всех карточек
+      document.querySelectorAll('.animal-card').forEach(card => {
+          card.classList.remove('selected');
+      });
+
+      // Выделяем выбранную карточку
+      event.currentTarget.classList.add('selected');
+
+      // Проверяем ответ
+      setTimeout(() => {
+          checkAnswer(animal);
+      }, 500);
+  }
+
+  // Проверка ответа
+  function checkAnswer(answer) {
+      const correctAnswer = questions[currentQuestion].correct;
+      const isCorrect = answer === correctAnswer;
+
+      // Показываем правильный ответ
+      document.querySelectorAll('.animal-card').forEach(card => {
+          if (card.onclick.toString().includes(correctAnswer)) {
+              card.classList.add('correct');
+          } else if (card.onclick.toString().includes(answer) && !isCorrect) {
+              card.classList.add('incorrect');
+          }
+      });
+
+      // Обновляем счет
+      if (isCorrect) {
+          score++;
+          document.getElementById('score').textContent = score;
+      }
+
+      // Показываем обратную связь
+      const feedback = document.getElementById('feedback');
+      const feedbackContent = document.getElementById('feedbackContent');
+
+      if (isCorrect) {
+          feedback.className = 'feedback correct';
+          feedbackContent.innerHTML = `<strong>Правильно! 🎉</strong> ${questions[currentQuestion].description}`;
+      } else {
+          feedback.className = 'feedback incorrect';
+          feedbackContent.innerHTML = `<strong>Попробуйте еще раз!</strong> Это был(а) ${getAnimalName(correctAnswer)}`;
+      }
+
+      feedback.style.display = 'block';
+
+      // Обновляем прогресс
+      updateProgress();
+  }
+
+  // Следующий вопрос
+  function nextQuestion() {
+      currentQuestion++;
+
+      if (currentQuestion >= questions.length) {
+          finishGame();
+          return;
+      }
+
+      // Сбрасываем состояние
+      selectedAnimal = null;
+      document.querySelectorAll('.animal-card').forEach(card => {
+          card.classList.remove('selected', 'correct', 'incorrect');
+      });
+
+      document.getElementById('feedback').style.display = 'none';
+      document.getElementById('currentQuestion').textContent = currentQuestion + 1;
+
+      // Обновляем прогресс
+      updateProgress();
+  }
+
+  // Обновление прогресса
+  function updateProgress() {
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+  }
+
+  // Завершение игры
+  function finishGame() {
+      clearInterval(timerInterval);
+
+      const modal = `
+          <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5)" tabindex="-1">
+              <div class="modal-dialog">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title">🎉 Задание завершено!</h5>
+                      </div>
+                      <div class="modal-body">
+                          <h3>Ваш результат: ${score} из ${questions.length}</h3>
+                          <p>Время: ${timeElapsed} секунд</p>
+                          ${score === questions.length ?
+                              '<div class="alert alert-success">Отличный результат! Вы настоящий эксперт по животным!</div>' :
+                              '<div class="alert alert-info">Хорошая работа! Продолжайте тренироваться!</div>'}
+                      </div>
+                      <div class="modal-footer">
+                          <a href="/demo" class="btn btn-secondary">Вернуться к демоверсии</a>
+                          <a href="/demo/color-task" class="btn btn-primary">Следующее задание</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modal);
+  }
+
+  // Вспомогательные функции
+  function getAnimalName(key) {
+      const names = { dog: 'собака', cat: 'кошка', cow: 'корова', bird: 'птичка' };
+      return names[key] || key;
+  }
+
+  function speak(text) {
+      if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ru-RU';
+          speechSynthesis.speak(utterance);
+      }
+  }
+
+  // Инициализация
+  window.onload = function() {
+      startTimer();
+      updateProgress();
+      speak('Добро пожаловать в задание "Угадай животное по звуку". Нажмите на кнопку, чтобы прослушать звук животного, затем выберите правильный вариант.');
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

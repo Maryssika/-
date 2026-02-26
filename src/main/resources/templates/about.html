@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>О проекте</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f8f9fa;
+        padding-top: 80px;
+    }
+
+    .content-section {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        margin: 20px 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .goal-card {
+        background: linear-gradient(135deg, #4a6fa5 0%, #6d98ba 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+
+    .principle-card {
+        border-left: 4px solid #4a6fa5;
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .back-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #4a6fa5;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="fas fa-graduation-cap me-2"></i>Платформа ОВЗ
+    </a>
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link" href="/">Главная</a>
+      <a class="nav-link" href="/demo">Демо</a>
+      <a class="nav-link" href="/demo">Возможности</a>
+      <a class="nav-link" href="/demo">Начать обучение</a>
+      <a class="nav-link" href="/team">Команда</a>
+      <a class="nav-link" href="/team">Контакты</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="content-section">
+    <h1 class="mb-4">О проекте</h1>
+
+    <div class="goal-card">
+      <h2><i class="fas fa-bullseye me-2"></i>Цель проекта</h2>
+      <p class="lead">Создание современной образовательной платформы для детей дошкольного возраста с ограниченными возможностями здоровья, основанной на принципах инклюзивного образования и адаптированной под различные потребности.</p>
+    </div>
+
+    <h3 class="mt-5 mb-4">🎯 Основные задачи</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="principle-card">
+          <h5>Индивидуальный подход</h5>
+          <p>Создание персонализированных образовательных маршрутов для каждого ребенка</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="principle-card">
+          <h5>Игровое обучение</h5>
+          <p>Разработка интерактивных заданий в игровой форме</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="principle-card">
+          <h5>Простота использования</h5>
+          <p>Интуитивно понятный интерфейс для детей, педагогов и родителей</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="principle-card">
+          <h5>Отслеживание прогресса</h5>
+          <p>Система мониторинга развития навыков и достижений</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mt-5 mb-4">📚 Педагогические принципы</h3>
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Индивидуализация</h5>
+            <p class="card-text">Учет особенностей каждого ребенка при построении образовательного маршрута</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Наглядность</h5>
+            <p class="card-text">Использование визуальных материалов и интерактивных элементов</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Практическая ориентированность</h5>
+            <p class="card-text">Связь учебных заданий с реальными жизненными ситуациями</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left me-2"></i>На главную
+      </a>
+      <a href="/learning" class="back-btn" style="background: #ff6b6b; margin-left: 10px;">
+        <i class="fas fa-play me-2"></i>Начать обучение
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

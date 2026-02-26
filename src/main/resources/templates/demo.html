@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${title}"></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .nav-link.active {
+        font-weight: bold;
+        color: #0d6efd !important;
+    }
+    .section {
+        padding: 80px 0 60px 0;
+    }
+    .demo-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+        height: 100%;
+    }
+    .demo-card:hover {
+        transform: translateY(-5px);
+    }
+    .task-preview {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    .task-button {
+        border: 2px dashed #dee2e6;
+        background: white;
+        color: #6c757d;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .task-button:hover {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+    .category-selector {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .category-selector:hover, .category-selector.active {
+        border-color: #0d6efd;
+        background-color: #f0f7ff;
+    }
+    .demo-hero {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+        color: white;
+        padding: 60px 0;
+        border-radius: 15px;
+    }
+  </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Платформа для детей с ОВЗ</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/about">О проекте</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/start-learning">Начать обучение</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/demo">Демоверсия</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contacts">Контакты</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="section">
+  <div class="container">
+    <!-- Герой секция -->
+    <div class="demo-hero text-center mb-5">
+      <div class="container">
+        <h1 class="display-5 mb-3">Попробуйте демоверсию бесплатно</h1>
+        <p class="lead mb-4">Ознакомьтесь с возможностями платформы без регистрации</p>
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="alert alert-light" role="alert">
+              🎁 <strong>Бесплатно и без регистрации</strong> - получите доступ к демо-заданиям прямо сейчас
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Выбор категории -->
+    <div class="row mb-5">
+      <div class="col-md-12">
+        <h3 class="text-center mb-4">Выберите категорию для демо-заданий</h3>
+        <p class="text-center mb-4">Попробуйте задания, адаптированные под разные потребности детей</p>
+
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <div class="category-selector text-center active" onclick="selectCategory('vision')">
+              <div class="mb-2">
+                <div style="font-size: 36px;">👁️</div>
+              </div>
+              <h5>Нарушения зрения</h5>
+              <small>Аудио-задания, высокая контрастность, голосовые подсказки</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="category-selector text-center" onclick="selectCategory('hearing')">
+              <div class="mb-2">
+                <div style="font-size: 36px;">👂</div>
+              </div>
+              <h5>Нарушения слуха</h5>
+              <small>Визуальные задания, субтитры, вибрационные сигналы</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="category-selector text-center" onclick="selectCategory('motor')">
+              <div class="mb-2">
+                <div style="font-size: 36px;">✋</div>
+              </div>
+              <h5>Нарушения моторики</h5>
+              <small>Крупные элементы, упрощенная навигация, таймеры</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="category-selector text-center" onclick="selectCategory('cognitive')">
+              <div class="mb-2">
+                <div style="font-size: 36px;">🧠</div>
+              </div>
+              <h5>Когнитивные особенности</h5>
+              <small>Простые интерфейсы, четкие инструкции, повторения</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Демо-задания -->
+    <div class="row mb-5">
+      <div class="col-md-12">
+        <h3 class="text-center mb-4" id="categoryTitle">Демо-задания для детей с нарушениями зрения</h3>
+
+        <div class="row" id="demo-tasks">
+          <!-- Задание 1 -->
+          <div class="col-md-4 mb-4">
+            <div class="demo-card">
+              <div class="card-body">
+                <div class="task-preview">
+                  <div class="text-center">
+                    <div style="font-size: 48px; margin-bottom: 10px;" id="icon1">🔊</div>
+                    <p id="title1">Угадай животное по звуку</p>
+                    <button class="task-button" onclick="playSound()">
+                      <span style="font-size: 24px;">▶️</span> Послушать
+                    </button>
+                  </div>
+                </div>
+                <h5 id="taskName1">Аудиальное распознавание</h5>
+                <p id="desc1">Послушайте звук и выберите соответствующее животное</p>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary" id="link1">Попробовать</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Задание 2 -->
+          <div class="col-md-4 mb-4">
+            <div class="demo-card">
+              <div class="card-body">
+                <div class="task-preview">
+                  <div class="text-center">
+                    <div style="font-size: 48px; margin-bottom: 10px;" id="icon2">🎨</div>
+                    <p id="title2">Сортировка по текстурам</p>
+                    <button class="task-button" onclick="showTexture()">
+                      <span style="font-size: 24px;">👆</span> Изучить
+                    </button>
+                  </div>
+                </div>
+                <h5 id="taskName2">Тактильное восприятие</h5>
+                <p id="desc2">Определите предметы по их текстуре и форме</p>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary" id="link2">Попробовать</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Задание 3 -->
+          <div class="col-md-4 mb-4">
+            <div class="demo-card">
+              <div class="card-body">
+                <div class="task-preview">
+                  <div class="text-center">
+                    <div style="font-size: 48px; margin-bottom: 10px;" id="icon3">🧩</div>
+                    <p id="title3">Звуковой пазл</p>
+                    <button class="task-button" onclick="playSequence()">
+                      <span style="font-size: 24px;">🔊</span> Воспроизвести
+                    </button>
+                  </div>
+                </div>
+                <h5 id="taskName3">Аудиальная память</h5>
+                <p id="desc3">Запомните последовательность звуков и повторите её</p>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary" id="link3">Попробовать</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Преимущества -->
+    <div class="row mb-5">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="text-center mb-4">Что вы получите в полной версии</h3>
+            <div class="row">
+              <div class="col-md-4 mb-3 text-center">
+                <div class="mb-3">
+                  <div style="font-size: 36px; color: #4a6bff;">📚</div>
+                </div>
+                <h5>Более 500 заданий</h5>
+                <p>Полная библиотека образовательных материалов для всех возрастов</p>
+              </div>
+              <div class="col-md-4 mb-3 text-center">
+                <div class="mb-3">
+                  <div style="font-size: 36px; color: #06d6a0;">📊</div>
+                </div>
+                <h5>Детальная аналитика</h5>
+                <p>Отслеживание прогресса, рекомендации, отчеты для родителей</p>
+              </div>
+              <div class="col-md-4 mb-3 text-center">
+                <div class="mb-3">
+                  <div style="font-size: 36px; color: #ff6b6b;">👨‍🏫</div>
+                </div>
+                <h5>Поддержка педагогов</h5>
+                <p>Консультации, вебинары, индивидуальные программы обучения</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center mb-5">
+      <div class="alert alert-info" role="alert">
+        <h4>Готовы начать полноценное обучение?</h4>
+        <p>Зарегистрируйтесь и получите доступ ко всем возможностям платформы</p>
+        <a href="/start-learning" class="btn btn-primary btn-lg">Начать обучение сейчас</a>
+        <a href="/contacts" class="btn btn-outline-primary btn-lg ms-2">Связаться с нами</a>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-secondary">← На главную</a>
+      <a href="/about" class="btn btn-outline-primary ms-2">О проекте</a>
+      <a href="/features" class="btn btn-outline-primary ms-2">Возможности</a>
+    </div>
+  </div>
+</div>
+
+<!-- Футер -->
+<footer class="bg-dark text-white py-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Образовательная платформа для детей с ОВЗ</h5>
+        <p>Инклюзивное образование для всех</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <p>Контакты: support@platforma-ovz.ru</p>
+        <p>© 2024 Все права защищены</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Данные для разных категорий
+  const categoryTasks = {
+      vision: {
+          title: "Демо-задания для детей с нарушениями зрения",
+          tasks: [
+              {
+                  icon: "🔊",
+                  title: "Угадай животное по звуку",
+                  taskName: "Аудиальное распознавание",
+                  description: "Послушайте звук и выберите соответствующее животное",
+                  link: "/demo/audio-task"
+              },
+              {
+                  icon: "🎨",
+                  title: "Сортировка по текстурам",
+                  taskName: "Тактильное восприятие",
+                  description: "Определите предметы по их текстуре и форме",
+                  link: "/demo/texture-task"
+              },
+              {
+                  icon: "🧩",
+                  title: "Звуковой пазл",
+                  taskName: "Аудиальная память",
+                  description: "Запомните последовательность звуков и повторите её",
+                  link: "/demo/sound-puzzle"
+              }
+          ]
+      },
+      hearing: {
+          title: "Демо-задания для детей с нарушениями слуха",
+          tasks: [
+              {
+                  icon: "👁️",
+                  title: "Найди одинаковые картинки",
+                  taskName: "Визуальное сопоставление",
+                  description: "Найдите пары одинаковых изображений",
+                  link: "/demo/visual-match"
+              },
+              {
+                  icon: "🎭",
+                  title: "Пантомима",
+                  taskName: "Визуальная коммуникация",
+                  description: "Покажи эмоцию без слов",
+                  link: "/demo/pantomime"
+              },
+              {
+                  icon: "🔤",
+                  title: "Субтитры к видео",
+                  taskName: "Чтение и понимание",
+                  description: "Посмотрите видео с субтитрами и ответьте на вопросы",
+                  link: "/demo/subtitles"
+              }
+          ]
+      },
+      motor: {
+          title: "Демо-задания для детей с нарушениями моторики",
+          tasks: [
+              {
+                  icon: "🎯",
+                  title: "Кликни по мишени",
+                  taskName: "Точность движений",
+                  description: "Попадите по появляющимся мишеням",
+                  link: "/demo/target-click"
+              },
+              {
+                  icon: "🖱️",
+                  title: "Простой drag-and-drop",
+                  taskName: "Координация движений",
+                  description: "Перетащите крупные элементы на нужные места",
+                  link: "/demo/simple-drag"
+              },
+              {
+                  icon: "⌨️",
+                  title: "Набор текста",
+                  taskName: "Клавиатурный ввод",
+                  description: "Наберите простые слова с увеличенной клавиатурой",
+                  link: "/demo/keyboard"
+              }
+          ]
+      },
+      cognitive: {
+          title: "Демо-задания для детей с когнитивными особенностями",
+          tasks: [
+              {
+                  icon: "🗂️",
+                  title: "Сортировка по категориям",
+                  taskName: "Классификация",
+                  description: "Разложите предметы по соответствующим группам",
+                  link: "/demo/categorization"
+              },
+              {
+                  icon: "🔢",
+                  title: "Простая последовательность",
+                  taskName: "Логическое мышление",
+                  description: "Расставьте картинки в правильном порядке",
+                  link: "/demo/sequence"
+              },
+              {
+                  icon: "🎮",
+                  title: "Повтори узор",
+                  taskName: "Визуальная память",
+                  description: "Запомните и повторите показанный узор",
+                  link: "/demo/pattern"
+              }
+          ]
+      }
+  };
+
+  function selectCategory(category) {
+      // Удаляем active класс у всех категорий
+      document.querySelectorAll('.category-selector').forEach(el => {
+          el.classList.remove('active');
+      });
+      // Добавляем active класс выбранной категории
+      event.currentTarget.classList.add('active');
+
+      // Загружаем задания для выбранной категории
+      loadCategoryTasks(category);
+  }
+
+  function loadCategoryTasks(category) {
+      const categoryData = categoryTasks[category];
+
+      document.getElementById('categoryTitle').textContent = categoryData.title;
+
+      // Обновляем данные для каждого задания
+      for (let i = 0; i < 3; i++) {
+          const task = categoryData.tasks[i];
+          document.getElementById(`icon${i+1}`).textContent = task.icon;
+          document.getElementById(`title${i+1}`).textContent = task.title;
+          document.getElementById(`taskName${i+1}`).textContent = task.taskName;
+          document.getElementById(`desc${i+1}`).textContent = task.description;
+          document.getElementById(`link${i+1}`).onclick = () => location.href = task.link;
+      }
+  }
+
+  function playSound() {
+      alert('🎵 Здесь будет воспроизводиться звук животного');
+  }
+
+  function showTexture() {
+      alert('👆 Показана текстура предмета');
+  }
+
+  function playSequence() {
+      alert('🔊 Воспроизводится последовательность звуков');
+  }
+
+  // Загружаем задания для зрения по умолчанию
+  window.onload = function() {
+      loadCategoryTasks('vision');
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

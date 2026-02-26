@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${title}"></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .nav-link.active {
+        font-weight: bold;
+        color: #0d6efd !important;
+    }
+    .section {
+        padding: 80px 0 40px 0;
+    }
+    .task-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .task-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    .puzzle-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+        max-width: 400px;
+    }
+    .puzzle-piece {
+        width: 120px;
+        height: 120px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: grab;
+        background-color: white;
+        user-select: none;
+        transition: all 0.3s;
+    }
+    .puzzle-piece:hover {
+        border-color: #4a6bff;
+        transform: scale(1.05);
+    }
+    .puzzle-piece:active {
+        cursor: grabbing;
+        transform: scale(1.1);
+    }
+    .puzzle-piece.correct {
+        border-color: #28a745;
+        background-color: #d4edda;
+    }
+    .puzzle-piece.incorrect {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+    }
+    .puzzle-board {
+        min-height: 400px;
+        border: 3px dashed #dee2e6;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        background-color: #f8f9fa;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .puzzle-slot {
+        width: 120px;
+        height: 120px;
+        border: 2px dashed #adb5bd;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        transition: all 0.3s;
+    }
+    .puzzle-slot.highlight {
+        border-color: #4a6bff;
+        background-color: #f0f7ff;
+    }
+    .puzzle-slot.filled {
+        border-style: solid;
+        border-color: #28a745;
+    }
+    .preview-image {
+        width: 200px;
+        height: 200px;
+        border: 3px solid #dee2e6;
+        border-radius: 10px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(45deg, #f8f9fa 25%, #e9ecef 25%, #e9ecef 50%, #f8f9fa 50%, #f8f9fa 75%, #e9ecef 75%);
+        background-size: 20px 20px;
+    }
+    .feedback {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: none;
+    }
+    .feedback.correct {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    .feedback.incorrect {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    .score-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4a6bff;
+    }
+    .difficulty-selector {
+        padding: 8px 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 20px;
+        margin: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .difficulty-selector:hover, .difficulty-selector.active {
+        border-color: #4a6bff;
+        background-color: #f0f7ff;
+    }
+    .puzzle-complete {
+        animation: celebrate 2s ease-in-out;
+    }
+    @keyframes celebrate {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Платформа для детей с ОВЗ</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo">Демоверсия</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo/audio-task">Аудиальное задание</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/demo/color-task">Цветовое задание</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/demo/puzzle-task">Пазл</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="section">
+  <div class="container">
+    <div class="task-container">
+      <!-- Информация о задании -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 th:text="${taskName}">Собери картинку</h1>
+            <p class="lead" th:text="${taskDescription}">Расставьте элементы в правильном порядке</p>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-primary" th:text="${category}">Для развития логики</span>
+            <div class="score-display mt-2">
+              Собрано: <span id="score">0</span>/3 пазлов
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основное задание -->
+      <div class="task-card">
+        <!-- Выбор сложности -->
+        <div class="text-center mb-4">
+          <h3>🧩 Выберите сложность пазла</h3>
+          <div class="d-flex justify-content-center flex-wrap mb-3">
+            <div class="difficulty-selector active" onclick="selectDifficulty('easy')">
+              🟢 Легкий (3 элемента)
+            </div>
+            <div class="difficulty-selector" onclick="selectDifficulty('medium')">
+              🟡 Средний (6 элементов)
+            </div>
+            <div class="difficulty-selector" onclick="selectDifficulty('hard')">
+              🔴 Сложный (9 элементов)
+            </div>
+          </div>
+        </div>
+
+        <!-- Предпросмотр изображения -->
+        <div class="text-center mb-4">
+          <h4>Пример изображения:</h4>
+          <div class="preview-image mb-3">
+            <div style="font-size: 48px;">🐱</div>
+          </div>
+          <p>Соберите из кусочков это изображение котика</p>
+        </div>
+
+        <div class="row">
+          <!-- Элементы пазла -->
+          <div class="col-md-6">
+            <h5>Кусочки пазла:</h5>
+            <p>Перетащите кусочки на поле справа</p>
+            <div id="puzzlePieces" class="puzzle-container mb-4">
+              <!-- Кусочки будут добавляться динамически -->
+            </div>
+            <button class="btn btn-outline-secondary w-100 mb-3" onclick="shufflePieces()">
+              🔀 Перемешать кусочки
+            </button>
+            <button class="btn btn-outline-primary w-100" onclick="showHint()">
+              💡 Показать подсказку
+            </button>
+          </div>
+
+          <!-- Поле для сборки -->
+          <div class="col-md-6">
+            <h5>Поле для сборки:</h5>
+            <p>Расположите кусочки в правильном порядке</p>
+            <div id="puzzleBoard" class="puzzle-board">
+              <!-- Слоты будут добавляться динамически -->
+            </div>
+            <div class="text-center mt-3">
+              <button class="btn btn-success" onclick="checkPuzzle()" id="checkButton">
+                ✅ Проверить сборку
+              </button>
+              <button class="btn btn-outline-danger ms-2" onclick="resetPuzzle()">
+                ↻ Начать заново
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Обратная связь -->
+        <div id="feedback" class="feedback" style="display: none;">
+          <div id="feedbackContent"></div>
+          <button class="btn btn-primary mt-2" onclick="nextPuzzle()" id="nextButton" style="display: none;">
+            Следующий пазл →
+          </button>
+        </div>
+
+        <!-- Прогресс -->
+        <div class="progress mb-3" style="height: 20px;">
+          <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <small>Пазл <span id="currentPuzzle">1</span> из 3</small>
+          <small id="timer">Времени: 0:00</small>
+        </div>
+      </div>
+
+      <!-- Инструкции и адаптации -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h5>🎯 Цель задания:</h5>
+              <ul>
+                <li>Развитие пространственного мышления</li>
+                <li>Тренировка логики и последовательности</li>
+                <li>Развитие мелкой моторики</li>
+                <li>Улучшение зрительной памяти</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h5>♿ Адаптации:</h5>
+              <ul>
+                <li><strong>Для моторики:</strong> Клик вместо перетаскивания</li>
+                <li><strong>Для зрения:</strong> Крупные элементы, высокая контрастность</li>
+                <li><strong>Для РАС:</strong> Четкая структура, предсказуемость</li>
+                <li><strong>Для всех:</strong> Возможность изменения сложности</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Советы для педагогов -->
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5>👨‍🏫 Советы для педагогов и родителей:</h5>
+          <div class="row">
+            <div class="col-md-4">
+              <h6>Начинающим:</h6>
+              <ul>
+                <li>Начните с 3-х элементов</li>
+                <li>Используйте подсказки</li>
+                <li>Хвалите за каждое правильное действие</li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h6>Продвинутым:</h6>
+              <ul>
+                <li>Увеличьте сложность до 9 элементов</li>
+                <li>Установите временной лимит</li>
+                <li>Предложите собрать без подсказок</li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h6>Вариации:</h6>
+              <ul>
+                <li>Собирайте на время</li>
+                <li>Соревнуйтесь с другими</li>
+                <li>Создавайте свои пазлы</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Навигация -->
+      <div class="d-flex justify-content-between mt-4">
+        <div>
+          <a href="/demo/color-task" class="btn btn-secondary">← Предыдущее задание</a>
+        </div>
+        <div>
+          <a href="/demo" class="btn btn-secondary">Вернуться к демоверсии</a>
+          <a href="/start-learning" class="btn btn-primary ms-2">Начать полное обучение →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Футер -->
+<footer class="bg-dark text-white py-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Образовательная платформа для детей с ОВЗ</h5>
+        <p>Инклюзивное образование для всех</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <p>Контакты: support@platforma-ovz.ru</p>
+        <p>© 2024 Все права защищены</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Настройки игры
+  const puzzles = [
+      { id: 1, image: '🐱', pieces: 3, correctOrder: [1, 2, 3] },
+      { id: 2, image: '🐶', pieces: 3, correctOrder: [2, 3, 1] },
+      { id: 3, image: '🐰', pieces: 3, correctOrder: [3, 1, 2] }
+  ];
+
+  const difficultySettings = {
+      easy: { pieces: 3, grid: 3 },
+      medium: { pieces: 6, grid: 3 },
+      hard: { pieces: 9, grid: 3 }
+  };
+
+  let currentPuzzle = 0;
+  let currentDifficulty = 'easy';
+  let score = 0;
+  let timeElapsed = 0;
+  let timerInterval;
+  let draggedPiece = null;
+  let placedPieces = {};
+
+  // Инициализация игры
+  function initGame() {
+      const puzzle = puzzles[currentPuzzle];
+      const settings = difficultySettings[currentDifficulty];
+
+      // Очищаем контейнеры
+      document.getElementById('puzzlePieces').innerHTML = '';
+      document.getElementById('puzzleBoard').innerHTML = '';
+      placedPieces = {};
+
+      // Создаем кусочки пазла
+      for (let i = 1; i <= settings.pieces; i++) {
+          const piece = document.createElement('div');
+          piece.className = 'puzzle-piece';
+          piece.id = `piece-${i}`;
+          piece.draggable = true;
+          piece.innerHTML = puzzle.image + ' ' + i;
+          piece.dataset.number = i;
+          piece.ondragstart = dragStart;
+          piece.ondragend = dragEnd;
+          piece.onclick = () => handlePieceClick(i);
+
+          document.getElementById('puzzlePieces').appendChild(piece);
+      }
+
+      // Создаем слоты на поле
+      const board = document.getElementById('puzzleBoard');
+      board.style.gridTemplateColumns = `repeat(${settings.grid}, 1fr)`;
+
+      for (let i = 1; i <= settings.pieces; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'puzzle-slot';
+          slot.id = `slot-${i}`;
+          slot.dataset.position = i;
+          slot.ondragover = allowDrop;
+          slot.ondrop = drop;
+          slot.onclick = () => handleSlotClick(i);
+
+          board.appendChild(slot);
+      }
+
+      // Обновляем превью
+      document.querySelector('.preview-image').innerHTML =
+          `<div style="font-size: 48px;">${puzzle.image}</div>`;
+
+      // Обновляем UI
+      document.getElementById('currentPuzzle').textContent = currentPuzzle + 1;
+      document.getElementById('score').textContent = score;
+      document.getElementById('feedback').style.display = 'none';
+      document.getElementById('nextButton').style.display = 'none';
+      document.getElementById('checkButton').disabled = false;
+
+      updateProgress();
+      startTimer();
+  }
+
+  // Drag & Drop функции
+  function dragStart(e) {
+      draggedPiece = e.target;
+      e.dataTransfer.setData("text/plain", e.target.id);
+      setTimeout(() => {
+          e.target.style.opacity = "0.5";
+      }, 0);
+  }
+
+  function dragEnd(e) {
+      e.target.style.opacity = "1";
+  }
+
+  function allowDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('highlight');
+  }
+
+  function drop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('highlight');
+
+      const pieceId = e.dataTransfer.getData("text/plain");
+      const piece = document.getElementById(pieceId);
+      const slot = e.currentTarget;
+      const position = parseInt(slot.dataset.position);
+      const pieceNumber = parseInt(piece.dataset.number);
+
+      if (piece && slot) {
+          // Проверяем, занят ли уже этот слот
+          if (placedPieces[position]) {
+              // Возвращаем старый кусочек обратно
+              const oldPieceId = placedPieces[position];
+              document.getElementById(oldPieceId).style.display = 'block';
+          }
+
+          // Помещаем новый кусочек
+          piece.style.display = 'none';
+          slot.innerHTML = piece.innerHTML;
+          slot.classList.add('filled');
+          placedPieces[position] = pieceId;
+
+          // Проверяем, все ли кусочки размещены
+          checkCompletion();
+      }
+  }
+
+  // Клик вместо перетаскивания (для адаптивности)
+  function handlePieceClick(pieceNumber) {
+      const piece = document.getElementById(`piece-${pieceNumber}`);
+      const slots = document.querySelectorAll('.puzzle-slot:not(.filled)');
+
+      if (slots.length > 0) {
+          const slot = slots[0];
+          const position = parseInt(slot.dataset.position);
+
+          piece.style.display = 'none';
+          slot.innerHTML = piece.innerHTML;
+          slot.classList.add('filled');
+          placedPieces[position] = piece.id;
+
+          checkCompletion();
+      }
+  }
+
+  function handleSlotClick(position) {
+      const pieceId = placedPieces[position];
+      if (pieceId) {
+          const piece = document.getElementById(pieceId);
+          const slot = document.getElementById(`slot-${position}`);
+
+          piece.style.display = 'block';
+          slot.innerHTML = '';
+          slot.classList.remove('filled');
+          delete placedPieces[position];
+
+          document.getElementById('checkButton').disabled = false;
+      }
+  }
+
+  // Проверка заполнения
+  function checkCompletion() {
+      const settings = difficultySettings[currentDifficulty];
+      const allPiecesPlaced = Object.keys(placedPieces).length === settings.pieces;
+
+      if (allPiecesPlaced) {
+          document.getElementById('checkButton').disabled = false;
+      }
+  }
+
+  // Проверка пазла
+  function checkPuzzle() {
+      const puzzle = puzzles[currentPuzzle];
+      let correctCount = 0;
+
+      // Проверяем каждый размещенный кусочек
+      Object.entries(placedPieces).forEach(([position, pieceId]) => {
+          const pieceNumber = parseInt(document.getElementById(pieceId).dataset.number);
+          const slot = document.getElementById(`slot-${position}`);
+          const piece = document.getElementById(pieceId);
+
+          // Проверяем правильность (простая логика для демо)
+          const isCorrect = (parseInt(position) === pieceNumber);
+
+          if (isCorrect) {
+              slot.classList.add('correct');
+              piece.classList.add('correct');
+              correctCount++;
+          } else {
+              slot.classList.add('incorrect');
+              piece.classList.add('incorrect');
+          }
+      });
+
+      // Показываем обратную связь
+      const feedback = document.getElementById('feedback');
+      const feedbackContent = document.getElementById('feedbackContent');
+
+      if (correctCount === difficultySettings[currentDifficulty].pieces) {
+          score++;
+          document.getElementById('score').textContent = score;
+
+          feedback.className = 'feedback correct';
+          feedbackContent.innerHTML = `
+              <strong>Отлично! 🎉</strong> Вы правильно собрали пазл!
+              <br><small>Правильных: ${correctCount} из ${difficultySettings[currentDifficulty].pieces}</small>
+          `;
+          document.getElementById('nextButton').style.display = 'block';
+
+          // Анимация успеха
+          document.getElementById('puzzleBoard').classList.add('puzzle-complete');
+          setTimeout(() => {
+              document.getElementById('puzzleBoard').classList.remove('puzzle-complete');
+          }, 2000);
+      } else {
+          feedback.className = 'feedback incorrect';
+          feedbackContent.innerHTML = `
+              <strong>Почти получилось!</strong>
+              <br><small>Правильных: ${correctCount} из ${difficultySettings[currentDifficulty].pieces}</small>
+              <br><small>Попробуйте еще раз или воспользуйтесь подсказкой</small>
+          `;
+      }
+
+      feedback.style.display = 'block';
+      updateProgress();
+  }
+
+  // Следующий пазл
+  function nextPuzzle() {
+      currentPuzzle++;
+
+      if (currentPuzzle >= puzzles.length) {
+          finishGame();
+          return;
+      }
+
+      initGame();
+  }
+
+  // Завершение игры
+  function finishGame() {
+      clearInterval(timerInterval);
+
+      const modal = `
+          <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5)" tabindex="-1">
+              <div class="modal-dialog">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title">🎉 Все пазлы собраны!</h5>
+                      </div>
+                      <div class="modal-body">
+                          <h3>Ваш результат: ${score} из ${puzzles.length}</h3>
+                          <p>Время: ${formatTime(timeElapsed)}</p>
+                          ${score === puzzles.length ?
+                              '<div class="alert alert-success">Вы настоящий мастер пазлов! Превосходно!</div>' :
+                              '<div class="alert alert-info">Отличная работа! Продолжайте тренироваться!</div>'}
+                          <p>Хотите попробовать другие задания?</p>
+                      </div>
+                      <div class="modal-footer">
+                          <button onclick="closeModal()" class="btn btn-secondary">Остаться здесь</button>
+                          <a href="/demo/audio-task" class="btn btn-primary">Аудиальное задание</a>
+                          <a href="/demo/color-task" class="btn btn-primary">Цветовое задание</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modal);
+  }
+
+  function closeModal() {
+      const modal = document.querySelector('.modal.fade.show');
+      if (modal) {
+          modal.remove();
+      }
+  }
+
+  // Вспомогательные функции
+  function selectDifficulty(level) {
+      currentDifficulty = level;
+
+      // Обновляем UI выбора сложности
+      document.querySelectorAll('.difficulty-selector').forEach(el => {
+          el.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+
+      initGame();
+  }
+
+  function shufflePieces() {
+      const pieces = Array.from(document.querySelectorAll('.puzzle-piece'));
+      const container = document.getElementById('puzzlePieces');
+
+      // Перемешиваем массив
+      for (let i = pieces.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          container.appendChild(pieces[j]);
+      }
+
+      // Озвучиваем действие для доступности
+      speak('Кусочки перемешаны');
+  }
+
+  function showHint() {
+      const puzzle = puzzles[currentPuzzle];
+      alert(`Подсказка: правильный порядок - ${puzzle.correctOrder.join(', ')}`);
+      speak('Подсказка показана');
+  }
+
+  function resetPuzzle() {
+      initGame();
+      speak('Пазл сброшен, начинаем заново');
+  }
+
+  function updateProgress() {
+      const progress = ((currentPuzzle + 1) / puzzles.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+  }
+
+  function startTimer() {
+      clearInterval(timerInterval);
+      timeElapsed = 0;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+          timeElapsed++;
+          updateTimerDisplay();
+      }, 1000);
+  }
+
+  function updateTimerDisplay() {
+      const minutes = Math.floor(timeElapsed / 60);
+      const seconds = timeElapsed % 60;
+      document.getElementById('timer').textContent =
+          `Времени: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${minutes} мин ${secs} сек`;
+  }
+
+  function speak(text) {
+      if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ru-RU';
+          utterance.rate = 0.9;
+          speechSynthesis.speak(utterance);
+      }
+  }
+
+  // Инициализация при загрузке
+  window.onload = function() {
+      initGame();
+      speak('Добро пожаловать в задание "Сборка пазла". Перетащите кусочки на поле в правильном порядке.');
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

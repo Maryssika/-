@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'Уведомления | ОВЗ Платформа'">Уведомления</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body { background-color: #f9fbfd; }
+    .notification-card {
+        border-left: 4px solid #0d6efd;
+        border-radius: 0.75rem;
+        transition: background-color 0.2s;
+    }
+    .notification-card.unread {
+        background-color: #e7f1ff;
+    }
+    .notification-card:hover {
+        background-color: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+          <a href="/student/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill me-3">
+            <i class="bi bi-arrow-left"></i> Назад
+          </a>
+          <h1 class="h3 mb-0">Уведомления</h1>
+        </div>
+        <button class="btn btn-sm btn-outline-primary rounded-pill">
+          <i class="bi bi-check2-all"></i> Отметить все прочитанными
+        </button>
+      </div>
+
+      <!-- Список уведомлений (динамический) -->
+      <div class="list-group">
+        <div class="list-group-item notification-card unread d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
+          <i class="bi bi-info-circle-fill text-primary fs-4"></i>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-1 fw-semibold">Новое задание</h6>
+              <small class="text-secondary">5 минут назад</small>
+            </div>
+            <p class="mb-1">Добавлено новое задание по математике: «Сложение до 20».</p>
+            <a href="#" class="btn btn-sm btn-link p-0">Перейти к заданию</a>
+          </div>
+          <span class="badge bg-primary rounded-pill">Новое</span>
+        </div>
+        <div class="list-group-item notification-card d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
+          <i class="bi bi-check-circle-fill text-success fs-4"></i>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-1 fw-semibold">Задание выполнено</h6>
+              <small class="text-secondary">2 часа назад</small>
+            </div>
+            <p class="mb-1">Поздравляем! Вы выполнили задание «Чтение рассказа» и получили 15 баллов.</p>
+          </div>
+        </div>
+        <div class="list-group-item notification-card d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
+          <i class="bi bi-megaphone-fill text-warning fs-4"></i>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-1 fw-semibold">Объявление</h6>
+              <small class="text-secondary">вчера</small>
+            </div>
+            <p class="mb-1">Завтра в 15:00 состоится онлайн-занятие с педагогом.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопка загрузить ещё -->
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-secondary rounded-pill px-4">
+          <i class="bi bi-arrow-repeat me-1"></i> Загрузить ещё
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

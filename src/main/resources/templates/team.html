@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Наша команда</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    nav {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 20px;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background 0.3s;
+    }
+
+    nav a:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .content {
+        background: white;
+        color: #333;
+        border-radius: 10px;
+        padding: 40px;
+        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .team-member {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .member-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .member-role {
+        color: #667eea;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .social-icon {
+        width: 35px;
+        height: 35px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .back-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <nav>
+    <a href="/">Главная</a>
+    <a href="/about">О проекте</a>
+    <a href="/features">Функции</a>
+    <a href="/accessibility">Доступность</a>
+    <a href="/register">Регистрация</a>
+    <a href="/login">Вход</a>
+  </nav>
+
+  <div class="content">
+    <h1 style="color: #333; text-align: center; margin-bottom: 30px;">👥 Наша команда</h1>
+
+    <p style="text-align: center; margin-bottom: 30px; color: #666;">
+      Профессионалы, создающие будущее инклюзивного образования.
+      Наша команда объединяет экспертов в области педагогики, психологии и технологий.
+    </p>
+
+    <div class="team-grid">
+      <!-- Член команды 1 -->
+      <div class="team-member">
+        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80"
+             alt="Иван Петров" class="member-photo">
+        <h3>Иван Петров</h3>
+        <div class="member-role">Основатель и генеральный директор</div>
+        <p>Кандидат педагогических наук, специалист в области инклюзивного образования с 15-летним опытом.</p>
+        <div class="social-links">
+          <a href="#" class="social-icon">in</a>
+          <a href="#" class="social-icon">@</a>
+        </div>
+      </div>
+
+      <!-- Член команды 2 -->
+      <div class="team-member">
+        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80"
+             alt="Мария Сидорова" class="member-photo">
+        <h3>Мария Сидорова</h3>
+        <div class="member-role">Научный руководитель</div>
+        <p>Доктор психологических наук, автор методик работы с детьми с РАС и другими нарушениями развития.</p>
+        <div class="social-links">
+          <a href="#" class="social-icon">in</a>
+          <a href="#" class="social-icon">@</a>
+        </div>
+      </div>
+
+      <!-- Член команды 3 -->
+      <div class="team-member">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80"
+             alt="Алексей Комаров" class="member-photo">
+        <h3>Алексей Комаров</h3>
+        <div class="member-role">Технический директор</div>
+        <p>Full-stack разработчик с опытом создания доступных веб-приложений, специалист по UX/UI.</p>
+        <div class="social-links">
+          <a href="#" class="social-icon">Git</a>
+          <a href="#" class="social-icon">@</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: #f0f7ff; border-radius: 10px;">
+      <h3 style="color: #333;">Наша миссия</h3>
+      <p style="color: #666;">Создать равные возможности для образования всех детей, независимо от их особенностей.
+        Мы верим, что каждый ребенок заслуживает качественного образования, адаптированного под его потребности.</p>
+    </div>
+
+    <a href="/" class="back-btn">← Вернуться на главную</a>
+  </div>
+</div>
+</body>
+</html>
