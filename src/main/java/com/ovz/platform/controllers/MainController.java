@@ -2,12 +2,15 @@ package com.ovz.platform.controllers;
 
 import com.ovz.platform.dto.CourseDto;
 import com.ovz.platform.dto.UserRegistrationDto;
-import com.ovz.platform.models.DisabilityType;
-import com.ovz.platform.models.EducationalTask;
-import com.ovz.platform.models.User;
-import com.ovz.platform.models.UserRole;
+import com.ovz.platform.models.user.AccessibilityProfile;
+import com.ovz.platform.models.user.DisabilityType;
+import com.ovz.platform.models.task.EducationalTask;
+import com.ovz.platform.models.user.User;
+import com.ovz.platform.models.user.UserRole;
 import com.ovz.platform.services.TaskService;
 import com.ovz.platform.services.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class MainController {
@@ -163,40 +167,46 @@ public class MainController {
     }
 
     @GetMapping("/student/dashboard")
-        public String studentDashboard(Model model) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-                return "redirect:/login";
-            }
-
-            String email = auth.getName();
-            User user;
-            try {
-                user = userService.findByEmail(email);
-            } catch (UsernameNotFoundException e) {
-                return "redirect:/login?error=user_not_found";
-            }
-
-            // Проверяем, что пользователь – ученик
-            if (user.getRole() != UserRole.STUDENT) {
-                return "redirect:/profile"; // или другое
-            }
-
-            // Основные атрибуты
-            model.addAttribute("fullName", user.getFullName() != null ? user.getFullName() : "Ученик");
-            model.addAttribute("tasksCompleted", 3); // заглушка
-            model.addAttribute("tasksTotal", 5);
-            model.addAttribute("studyMinutes", 45);
-            model.addAttribute("studyGoalMinutes", 60);
-            model.addAttribute("courses", getDummyCourses()); // заглушка
-
-            // Задания, персонализированные под тип нарушения
-            DisabilityType dt = user.getDisabilityType();
-            List<EducationalTask> tasks = taskService.getTasksByDisabilityType(dt);
-            model.addAttribute("personalizedTasks", tasks);
-
-            return "student/dashboard";
+    public String studentDashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return "redirect:/login";
         }
+
+        String email = auth.getName();
+        User user = userService.findByEmail(email);
+
+        // Проверка роли не обязательна, но для безопасности
+        if (user.getRole() != UserRole.STUDENT) {
+            return "redirect:/profile";
+        }
+
+        // Основные атрибуты
+        model.addAttribute("fullName", user.getFullName() != null ? user.getFullName() : "Ученик");
+        model.addAttribute("tasksCompleted", 3); // заглушка
+        model.addAttribute("tasksTotal", 5);
+        model.addAttribute("studyMinutes", 45);
+        model.addAttribute("studyGoalMinutes", 60);
+
+        // Настройки доступности
+        AccessibilityProfile ap = user.getAccessibilityProfile();
+        if (ap != null) {
+            model.addAttribute("highContrast", ap.getHighContrast());
+            model.addAttribute("fontSize", ap.getFontSize());
+            model.addAttribute("subtitles", ap.getSubtitlesEnabled());
+        } else {
+            model.addAttribute("highContrast", false);
+            model.addAttribute("fontSize", "medium");
+            model.addAttribute("subtitles", false);
+        }
+
+        // Персонализированные задания
+        List<EducationalTask> tasks = taskService.getTasksByDisabilityType(user.getDisabilityType());
+        model.addAttribute("personalizedTasks", tasks);
+
+        return "student/dashboard";
+    }
+
 
     @GetMapping("/parent/dashboard")
     public String parentDashboard(Model model) {
@@ -224,20 +234,27 @@ public class MainController {
             @RequestParam(required = false) String confirmPassword,
             @RequestParam(required = false) boolean highContrast,
             @RequestParam(required = false) boolean subtitles,
+            @RequestParam(required = false) boolean screenReader,
             @RequestParam(required = false) String fontSize,
+            @RequestParam(required = false) String colorScheme,
             RedirectAttributes redirectAttributes) {
 
+        // Получаем текущего аутентифицированного пользователя
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return "redirect:/login";
         }
         String email = auth.getName();
+
         try {
-            userService.updateUserProfile(email, fullName, newPassword, confirmPassword, highContrast, subtitles, fontSize);
+            // Вызываем сервис с новыми параметрами
+            userService.updateUserProfile(email, fullName, newPassword, confirmPassword,
+                    highContrast, subtitles, screenReader, fontSize, colorScheme);
             redirectAttributes.addFlashAttribute("successMessage", "Настройки успешно обновлены!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
+
         return "redirect:/settings";
     }
 
@@ -258,4 +275,32 @@ public class MainController {
         );
     }
 
+    @PostMapping("/settings/quick-update")
+    @ResponseBody
+    public ResponseEntity<?> quickUpdate(@RequestBody Map<String, Object> updates) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Не авторизован");
+            }
+            String email = auth.getName();
+            User user = userService.findByEmail(email);
+            AccessibilityProfile ap = user.getAccessibilityProfile();
+            if (ap == null) {
+                ap = new AccessibilityProfile();
+                user.setAccessibilityProfile(ap);
+            }
+            if (updates.containsKey("highContrast")) {
+                ap.setHighContrast((Boolean) updates.get("highContrast"));
+            }
+            if (updates.containsKey("fontSize")) {
+                ap.setFontSize((String) updates.get("fontSize"));
+            }
+            userService.save(user);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace(); // для отладки
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка сервера");
+        }
+    }
 }

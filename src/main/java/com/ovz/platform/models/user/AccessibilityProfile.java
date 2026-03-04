@@ -1,4 +1,4 @@
-package com.ovz.platform.models;
+package com.ovz.platform.models.user;
 
 import jakarta.persistence.*;
 import lombok.Data;

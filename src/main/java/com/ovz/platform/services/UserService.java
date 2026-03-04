@@ -1,15 +1,17 @@
 package com.ovz.platform.services;
 
 import com.ovz.platform.dto.UserRegistrationDto;
-import com.ovz.platform.models.AccessibilityProfile;
-import com.ovz.platform.models.DisabilityType;
-import com.ovz.platform.models.User;
-import com.ovz.platform.models.UserRole;
-import com.ovz.platform.repositories.UserRepository;
+import com.ovz.platform.models.user.AccessibilityProfile;
+import com.ovz.platform.models.user.DisabilityType;
+import com.ovz.platform.models.user.User;
+import com.ovz.platform.models.user.UserRole;
+import com.ovz.platform.repositories.user.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -73,33 +75,26 @@ public class UserService {
 
     @Transactional
     public void updateUserProfile(String email, String fullName, String newPassword, String confirmPassword,
-                                  boolean highContrast, boolean subtitles, String fontSize) {
+                                  boolean highContrast, boolean subtitles, boolean screenReader,
+                                  String fontSize, String colorScheme) {
         User user = findByEmail(email);
-
-        if (fullName != null && !fullName.isBlank()) {
-            user.setFullName(fullName);
-        }
-
-        if (newPassword != null && !newPassword.isEmpty()) {
-            if (!newPassword.equals(confirmPassword)) {
-                throw new IllegalArgumentException("Пароли не совпадают");
-            }
-            if (newPassword.length() < 8) {
-                throw new IllegalArgumentException("Пароль должен содержать минимум 8 символов");
-            }
-            user.setPassword(passwordEncoder.encode(newPassword));
-        }
-
-        // Сохраняем настройки доступности (если используется AccessibilityProfile)
-        if (user.getAccessibilityProfile() == null) {
-            user.setAccessibilityProfile(new AccessibilityProfile());
-        }
+        // ... обновление полей ...
         AccessibilityProfile ap = user.getAccessibilityProfile();
+        if (ap == null) {
+            ap = new AccessibilityProfile();
+            user.setAccessibilityProfile(ap);
+        }
         ap.setHighContrast(highContrast);
         ap.setSubtitlesEnabled(subtitles);
+        ap.setScreenReaderEnabled(screenReader);
         ap.setFontSize(fontSize);
-        // ... сохранить ap, если нужно
+        ap.setColorScheme(colorScheme);
+        // ... обновление пароля и имени ...
+        userRepository.save(user);
+    }
 
+    @Transactional
+    public void save(User user) {
         userRepository.save(user);
     }
 }

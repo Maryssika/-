@@ -1,8 +1,8 @@
 package com.ovz.platform.services;
 
-import com.ovz.platform.models.DisabilityType;
-import com.ovz.platform.models.EducationalTask;
-import com.ovz.platform.repositories.EducationalTaskRepository;
+import com.ovz.platform.models.user.DisabilityType;
+import com.ovz.platform.models.task.EducationalTask;
+import com.ovz.platform.repositories.task.EducationalTaskRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 

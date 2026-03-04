@@ -1,79 +1,206 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="'Настройки | ОВЗ Платформа'">Настройки</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <title>Настройки доступности</title>
   <style>
-    body { background-color: #f9fbfd; }
-    .card { border-radius: 1.25rem; border: none; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05); }
-    .btn-rounded { border-radius: 2rem; padding: 0.6rem 1.4rem; }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .settings-container {
+        max-width: 600px;
+        width: 100%;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+        animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .settings-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 40px;
+    }
+    .settings-header h1 {
+        font-size: 2.2em;
+        margin-bottom: 10px;
+    }
+    .settings-header p {
+        opacity: 0.9;
+    }
+    .settings-content {
+        padding: 40px;
+    }
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 5px solid #28a745;
+    }
+    .form-group {
+        margin-bottom: 25px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="password"],
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    @media (max-width: 768px) {
+        .settings-header h1 {
+            font-size: 1.8em;
+        }
+        .settings-content {
+            padding: 20px;
+        }
+    }
   </style>
 </head>
 <body>
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card p-4">
-        <div class="d-flex align-items-center mb-4">
-          <a href="/student/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill me-3">
-            <i class="bi bi-arrow-left"></i> Назад
-          </a>
-          <h1 class="h3 mb-0">Настройки профиля</h1>
-        </div>
+<div class="settings-container">
+  <div class="settings-header">
+    <h1>⚙️ Настройки доступности</h1>
+    <p>Настрой интерфейс под свои потребности</p>
+  </div>
+  <div class="settings-content">
+    <div class="success-message" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="error-message" th:if="${errorMessage}" th:text="${errorMessage}" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #f5c6cb;"></div>
 
-        <form action="/settings/update" method="post">
-          <div class="mb-3">
-            <label for="fullName" class="form-label fw-semibold">ФИО</label>
-            <input type="text" class="form-control form-control-lg" id="fullName" name="fullName"
-                   th:value="${user.fullName}" placeholder="Иванов Иван Иванович">
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label fw-semibold">Email</label>
-            <input type="email" class="form-control form-control-lg" id="email" name="email"
-                   th:value="${user.email}" readonly disabled>
-            <small class="text-secondary">Email нельзя изменить.</small>
-          </div>
-          <div class="mb-4">
-            <label class="form-label fw-semibold">Сменить пароль</label>
-            <div class="row g-2">
-              <div class="col-md-6">
-                <input type="password" class="form-control" name="newPassword" placeholder="Новый пароль">
-              </div>
-              <div class="col-md-6">
-                <input type="password" class="form-control" name="confirmPassword" placeholder="Подтвердите пароль">
-              </div>
-            </div>
-          </div>
-
-          <h5 class="fw-semibold mb-3">Настройки доступности</h5>
-          <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="highContrastDefault" name="highContrast">
-            <label class="form-check-label" for="highContrastDefault">Высокая контрастность (по умолчанию)</label>
-          </div>
-          <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="subtitlesDefault" name="subtitles">
-            <label class="form-check-label" for="subtitlesDefault">Субтитры (по умолчанию)</label>
-          </div>
-          <div class="mb-3">
-            <label for="fontSizeDefault" class="form-label">Размер шрифта по умолчанию</label>
-            <select class="form-select" id="fontSizeDefault" name="fontSize">
-              <option value="100%">Обычный</option>
-              <option value="130%">Крупный</option>
-              <option value="160%">Очень крупный</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-rounded w-100 mt-3">
-            <i class="bi bi-check-circle me-2"></i>Сохранить изменения
-          </button>
-        </form>
+    <form action="/settings/update" method="post">
+      <!-- Личные данные -->
+      <div class="form-group">
+        <label for="fullName">ФИО</label>
+        <input type="text" id="fullName" name="fullName" th:value="${user.fullName}" placeholder="Введите ФИО">
       </div>
-    </div>
+      <div class="form-group">
+        <label for="newPassword">Новый пароль (оставьте пустым, если не хотите менять)</label>
+        <input type="password" id="newPassword" name="newPassword" placeholder="Минимум 8 символов">
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Подтвердите новый пароль</label>
+        <input type="password" id="confirmPassword" name="confirmPassword">
+      </div>
+
+      <!-- Настройки доступности -->
+      <h3 style="margin: 20px 0 10px; color: #333;">Настройки отображения</h3>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="highContrast" name="highContrast" th:checked="${user.accessibilityProfile != null ? user.accessibilityProfile.highContrast : false}">
+        <label for="highContrast">Высокий контраст</label>
+      </div>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="subtitles" name="subtitles" th:checked="${user.accessibilityProfile != null ? user.accessibilityProfile.subtitlesEnabled : false}">
+        <label for="subtitles">Субтитры (для видео/аудио)</label>
+      </div>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="screenReader" name="screenReader" th:checked="${user.accessibilityProfile != null ? user.accessibilityProfile.screenReaderEnabled : false}">
+        <label for="screenReader">Поддержка экранного чтеца</label>
+      </div>
+
+      <div class="form-group">
+        <label for="fontSize">Размер шрифта</label>
+        <select id="fontSize" name="fontSize">
+          <option value="small" th:selected="${user.accessibilityProfile != null and user.accessibilityProfile.fontSize == 'small'}">Мелкий</option>
+          <option value="medium" th:selected="${user.accessibilityProfile == null or user.accessibilityProfile.fontSize == 'medium'}">Средний</option>
+          <option value="large" th:selected="${user.accessibilityProfile != null and user.accessibilityProfile.fontSize == 'large'}">Крупный</option>
+          <option value="x-large" th:selected="${user.accessibilityProfile != null and user.accessibilityProfile.fontSize == 'x-large'}">Очень крупный</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="colorScheme">Цветовая схема</label>
+        <select id="colorScheme" name="colorScheme">
+          <option value="default" th:selected="${user.accessibilityProfile == null or user.accessibilityProfile.colorScheme == 'default'}">По умолчанию</option>
+          <option value="dark" th:selected="${user.accessibilityProfile != null and user.accessibilityProfile.colorScheme == 'dark'}">Тёмная</option>
+          <option value="blue" th:selected="${user.accessibilityProfile != null and user.accessibilityProfile.colorScheme == 'blue'}">Синяя (для слабовидящих)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-save">Сохранить изменения</button>
+    </form>
+
+    <!-- Изменённая ссылка "Вернуться в дашборд" на "← Назад к заданиям" (или как вам удобно) -->
+    <a href="/student/dashboard" class="back-link">← Назад к заданиям</a>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

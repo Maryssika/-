@@ -1,6 +1,6 @@
 package com.ovz.platform.config;
 
-import com.ovz.platform.models.UserRole;
+import com.ovz.platform.models.user.UserRole;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;

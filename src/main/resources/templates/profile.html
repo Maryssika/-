@@ -3,85 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Мой профиль</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Мой профиль</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        /* Стили для высокой контрастности (применяются через класс) */
+        body.high-contrast {
+            background: black;
+            color: yellow;
+        }
+        body.high-contrast .profile-card,
+        body.high-contrast .settings-card {
+            background: black;
+            border: 2px solid yellow;
+            color: yellow;
+        }
+        body.high-contrast .btn {
+            background: yellow;
+            color: black;
+            border: 2px solid black;
+        }
+        /* Размеры шрифта */
+        body.font-small { font-size: 14px; }
+        body.font-medium { font-size: 16px; }
+        body.font-large { font-size: 18px; }
+        body.font-x-large { font-size: 20px; }
+
+        .profile-container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .profile-card, .settings-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+            margin-bottom: 30px;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+        }
+        .profile-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .profile-header p {
+            opacity: 0.9;
+            font-size: 1.2em;
+        }
+        .profile-content {
+            padding: 40px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        .info-label {
+            width: 150px;
+            font-weight: 600;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        .settings-card {
+            padding: 30px;
+        }
+        .settings-card h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .setting-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        .setting-item strong {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .setting-item span {
+            color: #333;
+            font-size: 1.1em;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        @media (max-width: 768px) {
+            .profile-header h1 {
+                font-size: 2em;
+            }
+            .profile-content {
+                padding: 20px;
+            }
+            .info-row {
+                flex-direction: column;
+            }
+            .info-label {
+                width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 </head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3>Мой профиль</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>ФИО:</strong>
-                        </div>
-                        <div class="col-md-8" th:text="${user.fullName}">
-                            Имя пользователя
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Роль:</strong>
-                        <span th:text="${user.role.displayName}">Ученик</span>
-                    </div>
-                    <div class="mb-2" th:if="${user.role.name() == 'STUDENT' and user.disabilityType != null}">
-                        <strong>Тип нарушения:</strong>
-                        <span th:text="${user.disabilityType.displayName}">Нарушение зрения</span>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Email:</strong>
-                        </div>
-                        <div class="col-md-8" th:text="${user.email}">
-                            email@example.com
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Роль:</strong>
-                        </div>
-                        <div class="col-md-8" th:text="${user.role.displayName}">
-                            Роль
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Дата регистрации:</strong>
-                        </div>
-                        <div class="col-md-8" th:text="${#dates.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">
-                            01.01.2024
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <a href="/" class="btn btn-secondary">На главную</a>
-                        <form th:action="@{/logout}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-danger">Выйти</button>
-                        </form>
-                    </div>
-                </div>
+<body th:class="${user.accessibilityProfile?.highContrast ? 'high-contrast' : ''} + ' font-' + ${user.accessibilityProfile?.fontSize ?: 'medium'}">
+<div class="profile-container">
+    <!-- Основная карточка профиля -->
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1>👤 Мой профиль</h1>
+            <p>Здесь вы можете просмотреть свои данные и настройки</p>
+        </div>
+        <div class="profile-content">
+            <div class="info-row">
+                <div class="info-label">Email:</div>
+                <div class="info-value" th:text="${user.email}">email@example.com</div>
             </div>
-
-            <div class="card mt-4" th:if="${user.role.name() == 'STUDENT'}">
-                <div class="card-header bg-success text-white">
-                    <h4>Мои достижения</h4>
-                </div>
-                <div class="card-body">
-                    <p>Здесь будут отображаться ваши достижения в обучении.</p>
-                </div>
+            <div class="info-row">
+                <div class="info-label">ФИО:</div>
+                <div class="info-value" th:text="${user.fullName ?: 'Не указано'}">Иван Иванов</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Роль:</div>
+                <div class="info-value" th:text="${user.role.displayName}">Ученик</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Тип нарушения:</div>
+                <div class="info-value" th:text="${user.disabilityType?.displayName ?: 'Не указано'}">Не указано</div>
             </div>
         </div>
     </div>
+
+    <!-- Карточка текущих настроек доступности -->
+    <div class="settings-card" th:if="${user.accessibilityProfile != null}">
+        <h2>⚙️ Текущие настройки доступности</h2>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <strong>Высокий контраст</strong>
+                <span th:text="${user.accessibilityProfile.highContrast} ? 'Включен' : 'Выключен'">Выключен</span>
+            </div>
+            <div class="setting-item">
+                <strong>Размер шрифта</strong>
+                <span th:text="${user.accessibilityProfile.fontSize ?: 'Средний'}">Средний</span>
+            </div>
+            <div class="setting-item">
+                <strong>Субтитры</strong>
+                <span th:text="${user.accessibilityProfile.subtitlesEnabled} ? 'Включены' : 'Выключены'">Выключены</span>
+            </div>
+            <div class="setting-item">
+                <strong>Экранный чтец</strong>
+                <span th:text="${user.accessibilityProfile.screenReaderEnabled} ? 'Включен' : 'Выключен'">Выключен</span>
+            </div>
+            <div class="setting-item" th:if="${user.accessibilityProfile.colorScheme != null}">
+                <strong>Цветовая схема</strong>
+                <span th:text="${user.accessibilityProfile.colorScheme}">default</span>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <a href="/settings" class="btn btn-primary">✏️ Редактировать профиль</a>
+            <!-- Универсальная ссылка "Назад" в зависимости от роли -->
+            <a th:href="@{${user.role.name() == 'STUDENT' ? '/student/dashboard' :
+                                      (user.role.name() == 'TEACHER' ? '/teacher/dashboard' :
+                                      (user.role.name() == 'PARENT' ? '/parent/dashboard' : '/profile'))}}"
+               class="btn btn-secondary">← Назад к заданиям</a>
+        </div>
+    </div>
+
+    <!-- Если профиль доступности не задан, показываем только кнопки -->
+    <div class="action-buttons" th:if="${user.accessibilityProfile == null}" style="justify-content: center; margin-top: 20px;">
+        <a href="/settings" class="btn btn-primary">✏️ Настроить профиль</a>
+        <a th:href="@{${user.role.name() == 'STUDENT' ? '/student/dashboard' :
+                                  (user.role.name() == 'TEACHER' ? '/teacher/dashboard' :
+                                  (user.role.name() == 'PARENT' ? '/parent/dashboard' : '/profile'))}}"
+           class="btn btn-secondary">← Назад</a>
+    </div>
 </div>
-
-<div th:replace="fragments/footer :: footer"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

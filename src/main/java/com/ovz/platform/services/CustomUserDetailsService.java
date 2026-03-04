@@ -1,7 +1,7 @@
 package com.ovz.platform.services;
 
-import com.ovz.platform.models.User;
-import com.ovz.platform.repositories.UserRepository;
+import com.ovz.platform.models.user.User;
+import com.ovz.platform.repositories.user.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

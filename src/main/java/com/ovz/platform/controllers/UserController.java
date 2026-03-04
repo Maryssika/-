@@ -1,7 +1,6 @@
 package com.ovz.platform.controllers;
 
 import com.ovz.platform.dto.UserRegistrationDto;
-import com.ovz.platform.models.User;
 import com.ovz.platform.services.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;

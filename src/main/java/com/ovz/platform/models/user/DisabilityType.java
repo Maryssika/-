@@ -1,4 +1,4 @@
-package com.ovz.platform.models;
+package com.ovz.platform.models.user;
 
 public enum DisabilityType {
     VISUAL("Нарушение зрения"),

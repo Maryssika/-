@@ -1,6 +1,6 @@
-package com.ovz.platform.repositories;
+package com.ovz.platform.repositories.user;
 
-import com.ovz.platform.models.User;
+import com.ovz.platform.models.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
