@@ -178,7 +178,7 @@
         }
     </style>
 </head>
-<body th:class="${user.accessibilityProfile?.highContrast ? 'high-contrast' : ''} + ' font-' + ${user.accessibilityProfile?.fontSize ?: 'medium'}">
+<body th:class="|${user.accessibilityProfile != null && user.accessibilityProfile.highContrast ? 'high-contrast' : ''} font-${user.accessibilityProfile?.fontSize ?: 'medium'}|">
 <div class="profile-container">
     <!-- Основная карточка профиля -->
     <div class="profile-card">
@@ -244,9 +244,9 @@
     <!-- Если профиль доступности не задан, показываем только кнопки -->
     <div class="action-buttons" th:if="${user.accessibilityProfile == null}" style="justify-content: center; margin-top: 20px;">
         <a href="/settings" class="btn btn-primary">✏️ Настроить профиль</a>
-        <a th:href="@{${user.role.name() == 'STUDENT' ? '/student/dashboard' :
-                                  (user.role.name() == 'TEACHER' ? '/teacher/dashboard' :
-                                  (user.role.name() == 'PARENT' ? '/parent/dashboard' : '/profile'))}}"
+        <a th:href="@{${user.role != null && user.role.name() == 'STUDENT' ? '/student/dashboard' :
+          (user.role != null && user.role.name() == 'TEACHER' ? '/teacher/dashboard' :
+          (user.role != null && user.role.name() == 'PARENT' ? '/parent/dashboard' : '/'))}}"
            class="btn btn-secondary">← Назад</a>
     </div>
 </div>

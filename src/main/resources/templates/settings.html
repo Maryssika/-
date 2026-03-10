@@ -147,6 +147,7 @@
     <div class="error-message" th:if="${errorMessage}" th:text="${errorMessage}" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #f5c6cb;"></div>
 
     <form action="/settings/update" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <!-- Личные данные -->
       <div class="form-group">
         <label for="fullName">ФИО</label>
@@ -199,7 +200,10 @@
     </form>
 
     <!-- Изменённая ссылка "Вернуться в дашборд" на "← Назад к заданиям" (или как вам удобно) -->
-    <a href="/student/dashboard" class="back-link">← Назад к заданиям</a>
+    <a th:href="@{${user.role != null && user.role.name() == 'STUDENT' ? '/student/dashboard' :
+                (user.role != null && user.role.name() == 'TEACHER' ? '/teacher/dashboard' :
+                (user.role != null && user.role.name() == 'PARENT' ? '/parent/dashboard' : '/profile'))}}"
+       class="back-link">← Назад к заданиям</a>
   </div>
 </div>
 </body>

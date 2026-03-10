@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -31,14 +32,24 @@ public class TaskController {
         }
         User user = userService.findByEmail(auth.getName());
 
+        // Получаем задание до проверки
         EducationalTask task = taskService.getTaskById(id);
+
+        // Проверяем, не выполнено ли уже
+        if (taskService.isTaskCompleted(user, task)) {
+            return "redirect:/student/dashboard?alreadyCompleted";
+        }
+
+        // Настройки доступности
+        model.addAttribute("highContrast", user.getAccessibilityProfile() != null ? user.getAccessibilityProfile().getHighContrast() : false);
+        model.addAttribute("fontSize", user.getAccessibilityProfile() != null ? user.getAccessibilityProfile().getFontSize() : "medium");
         model.addAttribute("task", task);
 
-        // Получаем все персонализированные задания для этого ученика
+        // Все задания для данного типа нарушения
         List<EducationalTask> allTasks = taskService.getTasksByDisabilityType(user.getDisabilityType());
         model.addAttribute("allTasks", allTasks);
 
-        // Находим индекс текущего задания и следующее
+        // Индекс текущего и следующее задание
         int currentIndex = -1;
         for (int i = 0; i < allTasks.size(); i++) {
             if (allTasks.get(i).getId().equals(id)) {
@@ -56,10 +67,18 @@ public class TaskController {
     @PostMapping("/task/{id}/answer")
     public String submitAnswer(@PathVariable Long id,
                                @RequestParam("answer") String answer,
-                               Model model) {
-        // Здесь можно сохранить ответ в базу, проверить правильность и т.д.
-        // Пока просто передаём сообщение об успехе
-        model.addAttribute("message", "Ответ принят! Спасибо.");
-        return "redirect:/task/" + id + "?success";
+                               RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User user = userService.findByEmail(auth.getName());
+        EducationalTask task = taskService.getTaskById(id);
+
+        // Отмечаем задание выполненным
+        taskService.markTaskAsCompleted(user, task);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Задание выполнено! Молодец!");
+        return "redirect:/student/dashboard";
     }
 }

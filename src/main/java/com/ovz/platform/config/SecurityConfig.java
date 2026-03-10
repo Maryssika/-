@@ -21,15 +21,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/about", "/features", "/demo/**").permitAll()
-                        .requestMatchers("/login", "/register", "/registration-success").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(
+                                "/", "/about", "/features", "/demo/**",
+                                "/login", "/register", "/registration-success",
+                                "/learning", "/team", "/contacts", "/start-learning",
+                                "/css/**", "/js/**", "/images/**", "/h2-console/**"
+                        ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/parent/**").hasRole("PARENT")
-                        .requestMatchers("/settings", "/settings/**", "/notifications").authenticated()  // <-- добавить
+                        .requestMatchers("/settings", "/settings/**", "/notifications").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

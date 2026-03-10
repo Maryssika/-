@@ -78,7 +78,18 @@ public class UserService {
                                   boolean highContrast, boolean subtitles, boolean screenReader,
                                   String fontSize, String colorScheme) {
         User user = findByEmail(email);
-        // ... обновление полей ...
+
+        // 1. Обновляем ФИО, если оно передано (не пустое)
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            user.setFullName(fullName);
+        }
+
+        // 2. Обновляем пароль, если он указан и совпадает с подтверждением
+        if (newPassword != null && !newPassword.isEmpty() && newPassword.equals(confirmPassword)) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+
+        // 3. Обновляем профиль доступности
         AccessibilityProfile ap = user.getAccessibilityProfile();
         if (ap == null) {
             ap = new AccessibilityProfile();
@@ -89,7 +100,8 @@ public class UserService {
         ap.setScreenReaderEnabled(screenReader);
         ap.setFontSize(fontSize);
         ap.setColorScheme(colorScheme);
-        // ... обновление пароля и имени ...
+
+        // 4. Сохраняем пользователя (профиль сохранится благодаря cascade)
         userRepository.save(user);
     }
 

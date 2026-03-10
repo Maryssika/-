@@ -155,7 +155,7 @@
             <label for="role" class="form-label">Вы — *</label>
             <select th:field="*{role}" id="role" class="form-select" aria-label="Роль">
               <option value="" disabled selected>— Выберите роль —</option>
-              <option th:each="role : ${T(com.ovz.platform.models.UserRole).values()}"
+              <option th:each="role : ${T(com.ovz.platform.models.user.UserRole).values()}"
                       th:value="${role.name()}" th:text="${role.displayName}"></option>
             </select>
             <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="text-danger small mt-1"></div>

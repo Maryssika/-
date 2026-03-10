@@ -34,8 +34,7 @@ public class User {
         this.disabilityType = disabilityType;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "accessibility_profile_id")
+    @OneToOne(cascade = CascadeType.ALL)
     private AccessibilityProfile accessibilityProfile;
 
     @Column(name = "created_at")

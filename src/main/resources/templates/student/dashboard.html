@@ -17,26 +17,18 @@
         padding: 20px;
         transition: all 0.3s;
     }
-    /* Высокий контраст */
     body.high-contrast {
         background: black;
         color: yellow;
     }
     body.high-contrast .top-bar,
     body.high-contrast .header,
-    body.high-contrast .stat-card,
+    body.hontainer.stat-card,
     body.high-contrast .tasks-section {
         background: black;
         border: 2px solid yellow;
         color: yellow;
     }
-    body.high-contrast .btn-task,
-    body.high-contrast .nav-link {
-        background: yellow;
-        color: black;
-        border: 2px solid black;
-    }
-    /* Размер шрифта */
     body.font-small { font-size: 14px; }
     body.font-medium { font-size: 16px; }
     body.font-large { font-size: 18px; }
@@ -46,7 +38,6 @@
         max-width: 1200px;
         margin: 0 auto;
     }
-    /* Верхняя панель */
     .top-bar {
         background: white;
         border-radius: 20px;
@@ -56,7 +47,6 @@
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        transition: background 0.3s, border 0.3s;
     }
     .user-info {
         display: flex;
@@ -73,15 +63,11 @@
         align-items: center;
         gap: 5px;
         cursor: pointer;
-        color: #333;
     }
     .user-info select {
         padding: 5px 10px;
         border-radius: 20px;
         border: 1px solid #ddd;
-        background: white;
-        font-size: 0.9em;
-        cursor: pointer;
     }
     .nav-links {
         display: flex;
@@ -136,14 +122,14 @@
         border-radius: 15px;
         padding: 25px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border 0.3s;
+        transition: transform 0.3s;
         animation: slideIn 0.5s ease-out forwards;
-        animation-delay: calc(0.1s * var(--i));
         opacity: 0;
     }
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
     .stat-card h3 {
         color: #667eea;
@@ -198,10 +184,19 @@
         border: 1px solid #e9ecef;
         display: flex;
         flex-direction: column;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        animation: cardAppear 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
     }
+    .task-card:nth-child(1) { animation-delay: 0.1s; }
+    .task-card:nth-child(2) { animation-delay: 0.2s; }
+    .task-card:nth-child(3) { animation-delay: 0.3s; }
+    .task-card:nth-child(4) { animation-delay: 0.4s; }
+    .task-card:nth-child(5) { animation-delay: 0.5s; }
     .task-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
         border-color: #667eea;
     }
     .task-card h3 {
@@ -214,6 +209,18 @@
         line-height: 1.6;
         margin-bottom: 20px;
         flex-grow: 1;
+    }
+    .task-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9em;
+        color: #888;
+    }
+    .difficulty {
+        background: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 50px;
     }
     .btn-task {
         display: inline-block;
@@ -242,60 +249,43 @@
         border-radius: 15px;
     }
     @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes cardAppear {
+        to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 768px) {
-        .top-bar {
-            flex-direction: column;
-            gap: 10px;
-        }
-        .user-info {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .user-info span {
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2em;
-        }
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+        .top-bar { flex-direction: column; gap: 10px; }
+        .user-info { flex-direction: column; align-items: stretch; }
+        .header h1 { font-size: 2em; }
+        .stats-grid { grid-template-columns: 1fr; }
+        .tasks-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body th:class="${highContrast} ? 'high-contrast' : '' + ' font-' + ${fontSize}">
 <div class="dashboard">
-  <!-- Верхняя панель с навигацией и быстрыми настройками -->
+  <!-- Верхняя панель -->
   <div class="top-bar">
     <div class="user-info">
       <span th:text="'👤 ' + ${fullName}">Ученик</span>
-
-      <!-- Быстрый переключатель контрастности -->
       <label>
         <input type="checkbox" id="contrastToggle" onchange="toggleContrast()" th:checked="${highContrast}">
         Контраст
       </label>
-
-      <!-- Быстрый выбор размера шрифта -->
       <select id="fontSizeSelect" onchange="changeFontSize(this)">
         <option value="small" th:selected="${fontSize == 'small'}">Мелкий</option>
         <option value="medium" th:selected="${fontSize == 'medium'}">Средний</option>
         <option value="large" th:selected="${fontSize == 'large'}">Крупный</option>
         <option value="x-large" th:selected="${fontSize == 'x-large'}">Очень крупный</option>
       </select>
-
       <a href="/profile" class="nav-link">Мой профиль</a>
       <a href="/settings" class="nav-link">Настройки</a>
-      <a href="/logout" class="nav-link logout-btn">Выйти</a>
+      <form action="/logout" method="post" style="display: inline;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="nav-link logout-btn" style="border: none; background: none; cursor: pointer;">Выйти</button>
+      </form>
     </div>
   </div>
 
@@ -307,14 +297,14 @@
 
   <!-- Статистика -->
   <div class="stats-grid">
-    <div class="stat-card" style="--i:1;">
+    <div class="stat-card">
       <h3>Выполнено заданий</h3>
       <div class="stat-number" th:text="${tasksCompleted} + '/' + ${tasksTotal}">3/5</div>
       <div class="stat-progress">
         <div class="progress-bar" th:style="'width: ' + (${tasksTotal} != 0 ? (${tasksCompleted} * 100 / ${tasksTotal}) : 0) + '%'"></div>
       </div>
     </div>
-    <div class="stat-card" style="--i:2;">
+    <div class="stat-card">
       <h3>Время занятий сегодня</h3>
       <div class="stat-number" th:text="${studyMinutes} + ' мин'">45 мин</div>
       <div class="stat-progress">
@@ -324,23 +314,27 @@
     </div>
   </div>
 
-  <!-- Персонализированные задания -->
+  <!-- Персонализированные задания (только невыполненные) -->
   <div class="tasks-section">
     <h2>🎯 Твои персональные задания</h2>
     <div class="tasks-grid" th:if="${not #lists.isEmpty(personalizedTasks)}">
       <div class="task-card" th:each="task : ${personalizedTasks}">
+        <div class="task-meta">
+          <span class="difficulty" th:text="'Сложность: ' + ${task.difficultyLevel} + '/5'">Сложность: 3/5</span>
+          <span th:text="${task.category}">Категория</span>
+        </div>
         <h3 th:text="${task.title}">Название задания</h3>
         <p th:text="${task.description}">Описание задания</p>
         <a th:href="@{/task/{id}(id=${task.id})}" class="btn-task">Начать задание</a>
       </div>
     </div>
     <div class="empty-state" th:if="${#lists.isEmpty(personalizedTasks)}">
-      Пока нет заданий для твоего типа нарушений. Обратись к учителю.
+      🎉 Ты выполнил все задания! Отдохни или попроси учителя добавить новые.
     </div>
   </div>
 </div>
 
-<!-- Скрипт для быстрого переключения настроек и сохранения на сервере -->
+<!-- Скрипты для быстрых настроек и звука -->
 <script>
   // Функция для переключения контрастности
   function toggleContrast() {

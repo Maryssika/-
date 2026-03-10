@@ -66,6 +66,33 @@ public class MainController {
         return "demo";
     }
 
+    @GetMapping("/demo/audio-task")
+    public String audioTaskDemo(Model model) {
+        model.addAttribute("title", "Аудиальное задание");
+        model.addAttribute("taskName", "Угадай животное по звуку");
+        model.addAttribute("taskDescription", "Послушайте звук и выберите правильное животное");
+        model.addAttribute("category", "Для слабовидящих детей");
+        return "demo/audio-task";
+    }
+
+    @GetMapping("/demo/color-task")
+    public String colorTaskDemo(Model model) {
+        model.addAttribute("title", "Цветовое задание");
+        model.addAttribute("taskName", "Сортировка предметов по цвету");
+        model.addAttribute("taskDescription", "Перетащите предметы в корзины соответствующего цвета");
+        model.addAttribute("category", "Для всех категорий");
+        return "demo/color-task";
+    }
+
+    @GetMapping("/demo/puzzle-task")
+    public String puzzleTaskDemo(Model model) {
+        model.addAttribute("title", "Собери картинку");
+        model.addAttribute("taskName", "Собери картинку");
+        model.addAttribute("taskDescription", "Расставьте элементы в правильном порядке");
+        model.addAttribute("category", "Для развития логики");
+        return "demo/puzzle-task";
+    }
+
     @GetMapping("/team")
     public String team(Model model) {
         model.addAttribute("title", "Наша команда");
@@ -94,9 +121,8 @@ public class MainController {
 
     @GetMapping("/register")
     public String register(Model model) {
-        model.addAttribute("title", "Регистрация");
         model.addAttribute("userDto", new UserRegistrationDto());
-        model.addAttribute("disabilityTypes", DisabilityType.values()); // <-- добавляем
+        model.addAttribute("disabilityTypes", DisabilityType.values());
         return "register";
     }
 
@@ -135,22 +161,16 @@ public class MainController {
     @GetMapping("/profile")
     public String profile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated() ||
-                "anonymousUser".equals(authentication.getPrincipal())) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return "redirect:/login";
         }
-
-        String email = authentication.getName();
-        User user = userService.findByEmail(email);
-
-        if (user == null) {
+        try {
+            User user = userService.findByEmail(authentication.getName());
+            model.addAttribute("user", user);
+            return "profile";
+        } catch (UsernameNotFoundException e) {
             return "redirect:/login";
         }
-
-        model.addAttribute("title", "Мой профиль");
-        model.addAttribute("user", user);
-        return "profile";
     }
 
     // Ролевые страницы
@@ -168,6 +188,7 @@ public class MainController {
 
     @GetMapping("/student/dashboard")
     public String studentDashboard(Model model) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return "redirect:/login";
@@ -175,33 +196,29 @@ public class MainController {
 
         String email = auth.getName();
         User user = userService.findByEmail(email);
-
-        // Проверка роли не обязательна, но для безопасности
         if (user.getRole() != UserRole.STUDENT) {
             return "redirect:/profile";
         }
 
-        // Основные атрибуты
         model.addAttribute("fullName", user.getFullName() != null ? user.getFullName() : "Ученик");
-        model.addAttribute("tasksCompleted", 3); // заглушка
-        model.addAttribute("tasksTotal", 5);
-        model.addAttribute("studyMinutes", 45);
+
+        // Реальная статистика
+        long tasksCompleted = taskService.countCompletedTasks(user);
+        long tasksTotal = taskService.countTotalTasksForUser(user);
+        model.addAttribute("tasksCompleted", tasksCompleted);
+        model.addAttribute("tasksTotal", tasksTotal);
+        model.addAttribute("studyMinutes", 45); // заглушка
         model.addAttribute("studyGoalMinutes", 60);
 
         // Настройки доступности
         AccessibilityProfile ap = user.getAccessibilityProfile();
-        if (ap != null) {
-            model.addAttribute("highContrast", ap.getHighContrast());
-            model.addAttribute("fontSize", ap.getFontSize());
-            model.addAttribute("subtitles", ap.getSubtitlesEnabled());
-        } else {
-            model.addAttribute("highContrast", false);
-            model.addAttribute("fontSize", "medium");
-            model.addAttribute("subtitles", false);
-        }
+        model.addAttribute("highContrast", ap != null ? ap.getHighContrast() : false);
+        model.addAttribute("fontSize", ap != null ? ap.getFontSize() : "medium");
+        model.addAttribute("subtitles", ap != null ? ap.getSubtitlesEnabled() : false);
+        model.addAttribute("screenReader", ap != null ? ap.getScreenReaderEnabled() : false); // <-- добавить эту
 
-        // Персонализированные задания
-        List<EducationalTask> tasks = taskService.getTasksByDisabilityType(user.getDisabilityType());
+        // Только невыполненные задания
+        List<EducationalTask> tasks = taskService.getUncompletedTasksForUser(user);
         model.addAttribute("personalizedTasks", tasks);
 
         return "student/dashboard";
@@ -239,7 +256,6 @@ public class MainController {
             @RequestParam(required = false) String colorScheme,
             RedirectAttributes redirectAttributes) {
 
-        // Получаем текущего аутентифицированного пользователя
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return "redirect:/login";
@@ -247,15 +263,15 @@ public class MainController {
         String email = auth.getName();
 
         try {
-            // Вызываем сервис с новыми параметрами
             userService.updateUserProfile(email, fullName, newPassword, confirmPassword,
                     highContrast, subtitles, screenReader, fontSize, colorScheme);
             redirectAttributes.addFlashAttribute("successMessage", "Настройки успешно обновлены!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/settings"; // при ошибке остаёмся на странице настроек
         }
 
-        return "redirect:/settings";
+        return "redirect:/profile"; // <--- ИЗМЕНЕНО
     }
 
     @GetMapping("/notifications")
