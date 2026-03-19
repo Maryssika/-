@@ -25,7 +25,17 @@ public class UserRegistrationDto {
 
     private String disabilityType;
 
+    private String parentEmail;
+
     // --- Геттеры и сеттеры для всех полей ---
+
+    public String getParentEmail() {
+        return parentEmail;
+    }
+
+    public void setParentEmail(String parentEmail) {
+        this.parentEmail = parentEmail;
+    }
 
     public String getEmail() {
         return email;

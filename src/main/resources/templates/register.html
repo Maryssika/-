@@ -47,7 +47,7 @@
     .text-danger {
         font-size: 0.95rem;
     }
-    /* Адаптация для высокой контрастности (может быть активирована через скрипт) */
+    /* Адаптация для высокой контрастности */
     .high-contrast {
         background-color: black !important;
         color: yellow !important;
@@ -96,10 +96,10 @@
 
         <!-- Форма регистрации -->
         <form th:action="@{/register}" th:object="${userDto}" method="post" novalidate>
-          <!-- CSRF токен (автоматически вставится благодаря Thymeleaf) -->
+          <!-- CSRF токен -->
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-          <!-- Общая ошибка (например, дубликат email) -->
+          <!-- Общая ошибка -->
           <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
             <span th:text="${error}">Ошибка регистрации</span>
@@ -162,7 +162,7 @@
           </div>
 
           <!-- Блок выбора типа нарушения (скрыт, показывается только при выборе STUDENT) -->
-          <div id="disabilityBlock" class="mb-4" style="display: none;">
+          <div id="disabilityBlock" class="mb-3" style="display: none;">
             <label for="disabilityType" class="form-label fw-semibold">Тип нарушения развития</label>
             <select th:field="*{disabilityType}" id="disabilityType" class="form-select">
               <option value="" selected>— Выберите (необязательно) —</option>
@@ -173,7 +173,15 @@
             <div th:if="${#fields.hasErrors('disabilityType')}" th:errors="*{disabilityType}" class="text-danger small mt-1"></div>
           </div>
 
-          <!-- Согласие на обработку данных (пример) -->
+          <!-- Блок для ввода email родителя (тоже только для STUDENT) -->
+          <div id="parentField" class="mb-3" style="display: none;">
+            <label for="parentEmail" class="form-label">Email родителя (если вы ученик)</label>
+            <input type="email" class="form-control" id="parentEmail" th:field="*{parentEmail}"
+                   placeholder="roditel@example.com">
+            <div class="form-text">Укажите email родителя, чтобы он мог отслеживать ваш прогресс.</div>
+          </div>
+
+          <!-- Согласие на обработку данных -->
           <div class="mb-4 form-check">
             <input type="checkbox" class="form-check-input" id="agreement" required>
             <label class="form-check-label" for="agreement">
@@ -204,57 +212,58 @@
   </div>
 </footer>
 
-<!-- Bootstrap JS для работы дропдаунов, вкладок и т.д. -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Скрипт для управления видимостью блока типа нарушения и прочие улучшения -->
+<!-- Скрипт управления зависимыми полями (disabilityType и parentEmail) -->
 <script>
   (function() {
       'use strict';
 
-      // --- Показ/скрытие блока выбора типа нарушения в зависимости от роли ---
-      function toggleDisabilityBlock() {
+      function toggleRoleDependentFields() {
           const roleSelect = document.getElementById('role');
           const disabilityBlock = document.getElementById('disabilityBlock');
-          if (!roleSelect || !disabilityBlock) return;
+          const parentField = document.getElementById('parentField');
+          if (!roleSelect || !disabilityBlock || !parentField) return;
 
-          if (roleSelect.value === 'STUDENT') {
-              disabilityBlock.style.display = 'block';
-              // Сделаем поле обязательным? Можно добавить required динамически
-              // Но мы не делаем его обязательным, так как необязательное поле.
-          } else {
-              disabilityBlock.style.display = 'none';
-              // Сбросить значение при скрытии, чтобы не отправлять лишнее
+          const isStudent = (roleSelect.value === 'STUDENT');
+
+          // Показываем/скрываем блок типа нарушения
+          disabilityBlock.style.display = isStudent ? 'block' : 'none';
+          // Сбрасываем значение, если скрыто
+          if (!isStudent) {
               const disabilitySelect = document.getElementById('disabilityType');
               if (disabilitySelect) disabilitySelect.value = '';
           }
+
+          // Показываем/скрываем поле email родителя
+          parentField.style.display = isStudent ? 'block' : 'none';
+          if (!isStudent) {
+              const parentInput = document.getElementById('parentEmail');
+              if (parentInput) parentInput.value = '';
+          }
       }
 
-      // При загрузке страницы
       document.addEventListener('DOMContentLoaded', function() {
-          toggleDisabilityBlock();
+          toggleRoleDependentFields();
           const roleSelect = document.getElementById('role');
           if (roleSelect) {
-              roleSelect.addEventListener('change', toggleDisabilityBlock);
+              roleSelect.addEventListener('change', toggleRoleDependentFields);
           }
       });
 
-      // --- Проверка Bootstrap на загрузку ---
+      // Проверка Bootstrap
       if (typeof bootstrap === 'undefined') {
           console.error('Bootstrap JS не загружен');
       } else {
           console.log('Bootstrap JS загружен');
       }
 
-      // --- Дополнительно: сохранение выбора размера шрифта (доступность) ---
-      // Применим сохранённые настройки, если есть
+      // Применение сохранённого размера шрифта
       const savedFontSize = localStorage.getItem('fontSize');
       if (savedFontSize) {
           document.documentElement.style.fontSize = savedFontSize;
       }
-
-      // Можно добавить кнопки изменения размера шрифта где-нибудь в меню,
-      // но для простоты регистрации опустим. При желании разместить в шапке.
   })();
 </script>
 

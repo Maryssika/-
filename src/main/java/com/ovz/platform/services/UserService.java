@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -26,46 +26,45 @@ public class UserService {
 
     @Transactional
     public User registerUser(UserRegistrationDto registrationDto) {
-        // Проверяем, существует ли пользователь с таким email
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
             throw new IllegalArgumentException("Пользователь с таким email уже существует");
         }
-
-        // Проверяем совпадение паролей
         if (!registrationDto.isPasswordValid()) {
             throw new IllegalArgumentException("Пароли не совпадают");
         }
 
-        // Создаем нового пользователя
         User user = new User();
         user.setEmail(registrationDto.getEmail());
         user.setFullName(registrationDto.getFullName());
+        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
 
-        String encodedPassword = passwordEncoder.encode(registrationDto.getPassword());
-        user.setPassword(encodedPassword);
-
-        // Устанавливаем роль
         try {
-            String roleStr = registrationDto.getRole().toUpperCase();
-            UserRole role = UserRole.valueOf(roleStr);
+            UserRole role = UserRole.valueOf(registrationDto.getRole().toUpperCase());
             user.setRole(role);
         } catch (IllegalArgumentException e) {
-            user.setRole(UserRole.STUDENT); // по умолчанию
+            user.setRole(UserRole.STUDENT);
         }
 
-        // Устанавливаем тип нарушения (только для учеников)
         if (user.getRole() == UserRole.STUDENT && registrationDto.getDisabilityType() != null) {
             try {
                 DisabilityType dt = DisabilityType.valueOf(registrationDto.getDisabilityType().toUpperCase());
                 user.setDisabilityType(dt);
             } catch (IllegalArgumentException e) {
-                user.setDisabilityType(DisabilityType.OTHER); // по умолчанию
+                user.setDisabilityType(DisabilityType.OTHER);
             }
+        }
+
+        if (user.getRole() == UserRole.STUDENT && registrationDto.getParentEmail() != null && !registrationDto.getParentEmail().isEmpty()) {
+            User parent = userRepository.findByEmail(registrationDto.getParentEmail())
+                    .orElseThrow(() -> new IllegalArgumentException("Родитель с таким email не найден"));
+            if (parent.getRole() != UserRole.PARENT) {
+                throw new IllegalArgumentException("Указанный email не принадлежит родителю");
+            }
+            user.setParent(parent);
         }
 
         return userRepository.save(user);
     }
-
 
     @Transactional(readOnly = true)
     public User findByEmail(String email) {
@@ -73,23 +72,32 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
+    @Transactional(readOnly = true)
+    public List<User> getChildren(User parent) {
+        return userRepository.findByParent(parent);
+    }
+
+    @Transactional(readOnly = true)
+    public User getChildForParent(User parent, Long childId) {
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new IllegalArgumentException("Ребёнок не найден"));
+        if (child.getParent() == null || !child.getParent().getId().equals(parent.getId())) {
+            throw new SecurityException("Доступ запрещён: это не ваш ребёнок");
+        }
+        return child;
+    }
+
     @Transactional
     public void updateUserProfile(String email, String fullName, String newPassword, String confirmPassword,
                                   boolean highContrast, boolean subtitles, boolean screenReader,
                                   String fontSize, String colorScheme) {
         User user = findByEmail(email);
-
-        // 1. Обновляем ФИО, если оно передано (не пустое)
         if (fullName != null && !fullName.trim().isEmpty()) {
             user.setFullName(fullName);
         }
-
-        // 2. Обновляем пароль, если он указан и совпадает с подтверждением
         if (newPassword != null && !newPassword.isEmpty() && newPassword.equals(confirmPassword)) {
             user.setPassword(passwordEncoder.encode(newPassword));
         }
-
-        // 3. Обновляем профиль доступности
         AccessibilityProfile ap = user.getAccessibilityProfile();
         if (ap == null) {
             ap = new AccessibilityProfile();
@@ -100,9 +108,25 @@ public class UserService {
         ap.setScreenReaderEnabled(screenReader);
         ap.setFontSize(fontSize);
         ap.setColorScheme(colorScheme);
-
-        // 4. Сохраняем пользователя (профиль сохранится благодаря cascade)
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void addChildToParent(String parentEmail, String childEmail) {
+        User parent = findByEmail(parentEmail);
+        if (parent.getRole() != UserRole.PARENT) {
+            throw new IllegalArgumentException("Текущий пользователь не является родителем");
+        }
+        User child = userRepository.findByEmail(childEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Ученик с таким email не найден"));
+        if (child.getRole() != UserRole.STUDENT) {
+            throw new IllegalArgumentException("Указанный пользователь не является учеником");
+        }
+        if (child.getParent() != null) {
+            throw new IllegalArgumentException("Этот ученик уже привязан к другому родителю");
+        }
+        child.setParent(parent);
+        userRepository.save(child);
     }
 
     @Transactional

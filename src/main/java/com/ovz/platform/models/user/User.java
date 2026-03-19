@@ -2,6 +2,8 @@ package com.ovz.platform.models.user;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -42,6 +44,32 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // ... существующие поля ...
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private User parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<User> children = new ArrayList<>();
+
+    // Геттеры и сеттеры для новых полей
+    public User getParent() {
+        return parent;
+    }
+
+    public void setParent(User parent) {
+        this.parent = parent;
+    }
+
+    public List<User> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<User> children) {
+        this.children = children;
+    }
 
     // Геттеры
     public Long getId() {

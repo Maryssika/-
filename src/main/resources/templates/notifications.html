@@ -3,85 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="'Уведомления | ОВЗ Платформа'">Уведомления</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Уведомления | ОВЗ Платформа</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #f9fbfd; }
-    .notification-card {
-        border-left: 4px solid #0d6efd;
-        border-radius: 0.75rem;
-        transition: background-color 0.2s;
+    body {
+        font-family: 'Nunito', sans-serif;
+        background: linear-gradient(145deg, #fff6e5 0%, #fde7f9 100%);
+        min-height: 100vh;
     }
-    .notification-card.unread {
-        background-color: #e7f1ff;
+    .navbar {
+        background: rgba(255,255,255,0.9) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .notifications-header {
+        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        border-radius: 2rem;
+        padding: 2rem;
+        color: #2d3436;
+        box-shadow: 0 15px 30px rgba(255,154,158,0.3);
+        margin-bottom: 2rem;
+    }
+    .notification-card {
+        background: white;
+        border-radius: 1.5rem;
+        border-left: 8px solid;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
     .notification-card:hover {
-        background-color: #f8f9fa;
+        transform: translateX(5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    .notification-unread {
+        border-left-color: #ff6b6b;
+        background: #fff9f9;
+    }
+    .notification-read {
+        border-left-color: #b2bec3;
+        opacity: 0.8;
+    }
+    .notification-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    .btn-back {
+        background: white;
+        border: 2px solid #ff9a9e;
+        color: #ff6b6b;
+        border-radius: 3rem;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .btn-back:hover {
+        background: #ff9a9e;
+        color: white;
+    }
+    .empty-notifications {
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(5px);
+        border-radius: 2rem;
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+    footer {
+        background: white;
+        border-radius: 2rem 2rem 0 0;
+        padding: 1.5rem;
+        margin-top: 3rem;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+    }
+    /* Доступность */
+    a:focus, button:focus, .btn:focus {
+        outline: 3px solid #ffbf47;
+        outline-offset: 4px;
     }
   </style>
 </head>
 <body>
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="d-flex align-items-center justify-content-between mb-4">
-        <div class="d-flex align-items-center">
-          <a href="/student/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill me-3">
-            <i class="bi bi-arrow-left"></i> Назад
-          </a>
-          <h1 class="h3 mb-0">Уведомления</h1>
-        </div>
-        <button class="btn btn-sm btn-outline-primary rounded-pill">
-          <i class="bi bi-check2-all"></i> Отметить все прочитанными
-        </button>
-      </div>
+<!-- Навигация (такая же, как на других страницах) -->
+<nav class="navbar navbar-expand-lg py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="bi bi-book-half me-2" style="font-size: 1.8rem; color: #ff6b6b;"></i>
+      ОВЗ Платформа
+    </a>
+    <div class="ms-auto">
+      <a href="/profile" class="btn btn-outline-secondary rounded-pill me-2 px-4">
+        <i class="bi bi-person-circle me-1"></i> Профиль
+      </a>
+      <a href="/logout" class="btn btn-outline-danger rounded-pill px-4">
+        <i class="bi bi-box-arrow-right me-1"></i> Выйти
+      </a>
+    </div>
+  </div>
+</nav>
 
-      <!-- Список уведомлений (динамический) -->
-      <div class="list-group">
-        <div class="list-group-item notification-card unread d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
-          <i class="bi bi-info-circle-fill text-primary fs-4"></i>
-          <div class="flex-grow-1">
-            <div class="d-flex justify-content-between">
-              <h6 class="mb-1 fw-semibold">Новое задание</h6>
-              <small class="text-secondary">5 минут назад</small>
-            </div>
-            <p class="mb-1">Добавлено новое задание по математике: «Сложение до 20».</p>
-            <a href="#" class="btn btn-sm btn-link p-0">Перейти к заданию</a>
-          </div>
-          <span class="badge bg-primary rounded-pill">Новое</span>
-        </div>
-        <div class="list-group-item notification-card d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
-          <i class="bi bi-check-circle-fill text-success fs-4"></i>
-          <div class="flex-grow-1">
-            <div class="d-flex justify-content-between">
-              <h6 class="mb-1 fw-semibold">Задание выполнено</h6>
-              <small class="text-secondary">2 часа назад</small>
-            </div>
-            <p class="mb-1">Поздравляем! Вы выполнили задание «Чтение рассказа» и получили 15 баллов.</p>
-          </div>
-        </div>
-        <div class="list-group-item notification-card d-flex align-items-start gap-3 p-3 mb-2 rounded-3">
-          <i class="bi bi-megaphone-fill text-warning fs-4"></i>
-          <div class="flex-grow-1">
-            <div class="d-flex justify-content-between">
-              <h6 class="mb-1 fw-semibold">Объявление</h6>
-              <small class="text-secondary">вчера</small>
-            </div>
-            <p class="mb-1">Завтра в 15:00 состоится онлайн-занятие с педагогом.</p>
-          </div>
-        </div>
-      </div>
+<div class="container my-5">
+  <!-- Кнопка назад (возврат на главную родителя) -->
+  <a href="/parent/dashboard" class="btn-back mb-4">
+    <i class="bi bi-arrow-left me-2"></i> Назад в панель родителя
+  </a>
 
-      <!-- Кнопка загрузить ещё -->
-      <div class="text-center mt-4">
-        <button class="btn btn-outline-secondary rounded-pill px-4">
-          <i class="bi bi-arrow-repeat me-1"></i> Загрузить ещё
-        </button>
+  <!-- Заголовок -->
+  <div class="notifications-header d-flex align-items-center">
+    <i class="bi bi-bell fs-1 me-4"></i>
+    <div>
+      <h1 class="display-5 fw-bold">Ваши уведомления</h1>
+      <p class="lead mb-0">Здесь появляются новости, успехи детей и полезные советы.</p>
+    </div>
+  </div>
+
+  <!-- Список уведомлений (пример с динамическими данными) -->
+  <div th:if="${notifications != null && !notifications.isEmpty()}" class="mt-4">
+    <div th:each="note : ${notifications}" class="notification-card p-4"
+         th:classappend="${note.read} ? 'notification-read' : 'notification-unread'">
+      <div class="d-flex align-items-start">
+        <i class="bi bi-megaphone notification-icon" th:if="${note.type == 'INFO'}"></i>
+        <i class="bi bi-trophy notification-icon" th:if="${note.type == 'ACHIEVEMENT'}"></i>
+        <i class="bi bi-star notification-icon" th:if="${note.type == 'TIP'}"></i>
+        <i class="bi bi-bell notification-icon" th:if="${note.type == null}"></i>
+        <div class="flex-grow-1">
+          <h5 class="fw-bold" th:text="${note.title}">Заголовок уведомления</h5>
+          <p th:text="${note.message}">Текст уведомления...</p>
+          <small class="text-secondary">
+            <i class="bi bi-clock me-1"></i> <span th:text="${#temporals.format(note.createdAt, 'dd MMM yyyy HH:mm')}">01.01.2026 10:00</span>
+          </small>
+        </div>
+        <span th:if="${!note.read}" class="badge bg-danger rounded-pill px-3 py-2">Новое</span>
       </div>
     </div>
   </div>
+
+  <!-- Заглушка, если уведомлений нет -->
+  <div th:if="${notifications == null || notifications.isEmpty()}" class="empty-notifications">
+    <i class="bi bi-bell-slash fs-1 text-secondary"></i>
+    <h3 class="mt-3">Уведомлений пока нет</h3>
+    <p class="text-secondary">Как только появятся новые события, мы сразу вам сообщим.</p>
+  </div>
+
+  <!-- Блок с забавным фактом или мотивацией -->
+  <div class="mt-5 p-4 bg-white rounded-4 shadow-sm">
+    <i class="bi bi-emoji-sunglasses fs-1 text-warning"></i>
+    <h4>Знаете ли вы?</h4>
+    <p>Дети с ОВЗ часто обладают удивительными талантами! Поддержка близких помогает им раскрыться.</p>
+  </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Подвал -->
+<footer class="text-center">
+  <span class="text-secondary">© 2026 ОВЗ Платформа. Всегда рядом.</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

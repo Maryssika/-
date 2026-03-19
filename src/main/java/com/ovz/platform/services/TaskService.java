@@ -9,7 +9,9 @@ import com.ovz.platform.repositories.task.UserTaskProgressRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,5 +78,20 @@ public class TaskService {
     // Проверить, выполнено ли задание пользователем
     public boolean isTaskCompleted(User user, EducationalTask task) {
         return progressRepository.existsByUserAndTaskAndCompletedTrue(user, task);
+    }
+
+    public List<Map<String, Object>> getTasksWithStatus(User user) {
+        List<EducationalTask> allTasks = getTasksByDisabilityType(user.getDisabilityType());
+        List<UserTaskProgress> completedProgress = progressRepository.findByUserAndCompletedTrue(user);
+        Set<Long> completedIds = completedProgress.stream()
+                .map(p -> p.getTask().getId())
+                .collect(Collectors.toSet());
+
+        return allTasks.stream().map(task -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("task", task);
+            map.put("completed", completedIds.contains(task.getId()));
+            return map;
+        }).collect(Collectors.toList());
     }
 }

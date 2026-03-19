@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -227,8 +228,103 @@ public class MainController {
 
     @GetMapping("/parent/dashboard")
     public String parentDashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String email = auth.getName();
+        User parent = userService.findByEmail(email);
+
+        // Проверяем, что пользователь действительно родитель
+        if (parent.getRole() != UserRole.PARENT) {
+            return "redirect:/profile";
+        }
+
+        // Получаем детей родителя
+        List<User> children = userService.getChildren(parent);
+
+        // Для каждого ребёнка получаем статистику по заданиям
+        Map<User, Map<String, Object>> childrenStats = new HashMap<>();
+        for (User child : children) {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("tasksCompleted", taskService.countCompletedTasks(child));
+            stats.put("tasksTotal", taskService.countTotalTasksForUser(child));
+            stats.put("studyMinutes", 45); // можно заменить реальными данными
+            childrenStats.put(child, stats);
+        }
+
+        model.addAttribute("parent", parent);
+        model.addAttribute("childrenStats", childrenStats);
         model.addAttribute("title", "Панель родителя");
+
         return "parent/dashboard";
+    }
+
+    @GetMapping("/parent/child/{id}")
+    public String parentChildDetails(@PathVariable Long id, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String email = auth.getName();
+        User parent = userService.findByEmail(email);
+
+        // Проверяем роль родителя
+        if (parent.getRole() != UserRole.PARENT) {
+            return "redirect:/profile";
+        }
+
+        // Получаем ребёнка с проверкой принадлежности
+        User child;
+        try {
+            child = userService.getChildForParent(parent, id);
+        } catch (SecurityException e) {
+            return "redirect:/parent/dashboard?error=access_denied";
+        }
+
+        // Получаем детальную статистику
+        long tasksCompleted = taskService.countCompletedTasks(child);
+        long tasksTotal = taskService.countTotalTasksForUser(child);
+        List<Map<String, Object>> tasksWithStatus = taskService.getTasksWithStatus(child);
+
+        model.addAttribute("child", child);
+        model.addAttribute("tasksCompleted", tasksCompleted);
+        model.addAttribute("tasksTotal", tasksTotal);
+        model.addAttribute("tasksWithStatus", tasksWithStatus);
+        model.addAttribute("title", "Профиль ученика");
+
+        return "parent/child";
+    }
+
+    @GetMapping("/parent/add-child")
+    public String showAddChildForm(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User parent = userService.findByEmail(auth.getName());
+        if (parent.getRole() != UserRole.PARENT) {
+            return "redirect:/profile";
+        }
+        model.addAttribute("parent", parent);
+        return "parent/add-child";
+    }
+
+    @PostMapping("/parent/add-child")
+    public String addChild(@RequestParam String childEmail, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        try {
+            userService.addChildToParent(auth.getName(), childEmail);
+            redirectAttributes.addFlashAttribute("successMessage", "Ребёнок успешно привязан!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/parent/dashboard";
     }
 
     @GetMapping("/settings")
