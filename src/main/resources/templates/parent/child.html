@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${title}">Профиль ученика</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<!-- Навигация (можно вынести в фрагмент) -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">ОВЗ Платформа</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/parent/dashboard">Панель родителя</a></li>
+        <li class="nav-item"><a class="nav-link" href="/profile">Профиль</a></li>
+        <li class="nav-item"><a class="nav-link" href="/settings">Настройки</a></li>
+        <li class="nav-item"><a class="nav-link" href="/notifications">Уведомления</a></li>
+        <li class="nav-item"><a class="nav-link" href="/logout">Выйти</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <h1>Профиль ученика: <span th:text="${child.fullName}">Имя</span></h1>
+  <p><strong>Email:</strong> <span th:text="${child.email}">email@example.com</span></p>
+  <p><strong>Тип нарушения:</strong> <span th:text="${child.disabilityType?.displayName ?: 'Не указан'}">—</span></p>
+
+  <h3 class="mt-4">Прогресс обучения</h3>
+  <p>Выполнено заданий: <span th:text="${tasksCompleted}">0</span> из <span th:text="${tasksTotal}">0</span></p>
+  <div class="progress mb-4">
+    <div class="progress-bar" role="progressbar"
+         th:style="'width: ' + (${tasksTotal} > 0 ? (${tasksCompleted} * 100 / ${tasksTotal}) : 0) + '%'"
+         th:attr="aria-valuenow=${tasksCompleted}, aria-valuemin=0, aria-valuemax=${tasksTotal}">
+      <span th:text="${tasksTotal} > 0 ? ${#numbers.formatDecimal((tasksCompleted * 100 / tasksTotal), 1, 1)} + '%' : '0%'">0%</span>
+    </div>
+  </div>
+
+  <h4>Список заданий</h4>
+  <div th:if="${#lists.isEmpty(tasksWithStatus)}" class="alert alert-info">
+    Для этого ученика пока нет заданий.
+  </div>
+  <table th:unless="${#lists.isEmpty(tasksWithStatus)}" class="table table-striped">
+    <thead>
+    <tr>
+      <th>Название</th>
+      <th>Описание</th>
+      <th>Статус</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${tasksWithStatus}">
+      <td th:text="${item.task.title}">Задание</td>
+      <td th:text="${item.task.description}">Описание</td>
+      <td>
+        <span th:if="${item.completed}" class="badge bg-success">Выполнено</span>
+        <span th:unless="${item.completed}" class="badge bg-secondary">Не выполнено</span>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <a href="/parent/dashboard" class="btn btn-primary mt-3">← Назад к панели родителя</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
