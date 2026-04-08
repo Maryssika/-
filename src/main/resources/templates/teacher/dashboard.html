@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель учителя</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 1rem;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        overflow: hidden;
+        padding: 2rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .header-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.2rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 2rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #cbd5e0;
+        color: #4a5568;
+    }
+    .btn-outline:hover {
+        background: #f7fafc;
+    }
+    .btn-outline-danger {
+        background: transparent;
+        border: 1px solid #f56565;
+        color: #e53e3e;
+    }
+    .btn-outline-danger:hover {
+        background: #fff5f5;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+    }
+    .btn-secondary {
+        background: #edf2f7;
+        color: #4a5568;
+    }
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+    .btn-success {
+        background: #48bb78;
+        color: white;
+    }
+    .btn-success:hover {
+        background: #38a169;
+    }
+    .btn-info {
+        background: #4299e1;
+        color: white;
+        font-size: 0.8rem;
+        padding: 0.4rem 1rem;
+    }
+    .btn-danger {
+        background: #f56565;
+        color: white;
+        font-size: 0.8rem;
+        padding: 0.4rem 1rem;
+    }
+    .actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin: 1.5rem 0;
+    }
+    .add-student-form {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    .add-student-form input {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 2rem;
+    }
+    .add-student-form input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+    }
+    .table th, .table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+    }
+    .table th {
+        background: #f7fafc;
+        font-weight: 600;
+    }
+    .table tbody tr:hover {
+        background: #fefcbf;
+    }
+    .alert {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin: 1rem 0;
+        background: #ebf8ff;
+        color: #2b6cb0;
+    }
+    @media (max-width: 768px) {
+        .container { padding: 1rem; }
+        .table, .table thead, .table tbody, .table tr, .table td { display: block; }
+        .table thead { display: none; }
+        .table tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.5rem; }
+        .table td { display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #edf2f7; }
+        .table td::before { content: attr(data-label); font-weight: 600; width: 40%; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header-actions">
+    <a th:href="@{/profile}" class="btn btn-outline">👤 Мой профиль</a>
+    <a th:href="@{/settings}" class="btn btn-outline">⚙️ Настройки</a>
+    <form method="post" th:action="@{/logout}" style="display: inline;">
+      <button type="submit" class="btn btn-outline-danger">🚪 Выйти</button>
+    </form>
+  </div>
+
+  <h1>👋 Добро пожаловать, <span th:text="${teacher.fullName}">Учитель</span>!</h1>
+
+  <div class="actions">
+    <a th:href="@{/teacher/create-task}" class="btn btn-primary">➕ Создать задание</a>
+    <a th:href="@{/teacher/tasks}" class="btn btn-secondary">📋 Список заданий</a>
+  </div>
+
+  <h2>👨‍🎓 Мои ученики</h2>
+
+  <form method="post" th:action="@{/teacher/add-student}" class="add-student-form">
+    <input type="email" name="studentEmail" placeholder="Email ученика" required>
+    <button type="submit" class="btn btn-success">➕ Добавить ученика</button>
+  </form>
+
+  <div th:if="${students.isEmpty()}" class="alert">
+    📭 У вас пока нет учеников. Добавьте первого!
+  </div>
+  <div th:unless="${students.isEmpty()}">
+    <table class="table">
+      <thead>
+      <tr><th>ФИО</th><th>Email</th><th>Тип нарушения</th><th>Прогресс</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+      <tr th:each="student : ${students}">
+        <td data-label="ФИО" th:text="${student.fullName}">Имя</td>
+        <td data-label="Email" th:text="${student.email}">email@example.com</td>
+        <td data-label="Тип нарушения" th:text="${student.disabilityType?.displayName}">—</td>
+        <td data-label="Прогресс">
+          <a th:href="@{/teacher/student/{id}(id=${student.id})}" class="btn btn-info">📊 Подробнее</a>
+        </td>
+        <td data-label="Действия">
+          <form method="post" th:action="@{/teacher/remove-student/{id}(id=${student.id})}" style="display:inline">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить ученика?')">🗑 Удалить</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

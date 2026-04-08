@@ -45,14 +45,27 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ... существующие поля ...
-
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private User parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<User> children = new ArrayList<>();
+
+    // У ученика - ссылка на учителя
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private User teacher;
+
+    // У учителя - список учеников
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<User> students = new ArrayList<>();
+
+    // Геттеры и сеттеры
+    public User getTeacher() { return teacher; }
+    public void setTeacher(User teacher) { this.teacher = teacher; }
+    public List<User> getStudents() { return students; }
+    public void setStudents(List<User> students) { this.students = students; }
 
     // Геттеры и сеттеры для новых полей
     public User getParent() {

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Редактировать задание</title>
+  <style>
+    /* такие же стили, как в create-task.html */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 1rem;
+    }
+    .container {
+        max-width: 700px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    h1 { margin-bottom: 1.5rem; color: #2d3748; border-left: 4px solid #667eea; padding-left: 1rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.3rem; color: #4a5568; }
+    input, select, textarea {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+    }
+    .btn {
+        display: inline-block;
+        padding: 0.7rem 1.5rem;
+        border-radius: 2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+    .btn-secondary { background: #cbd5e0; color: #2d3748; margin-left: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>✏️ Редактировать задание</h1>
+  <form method="post" th:action="@{/teacher/update-task/{id}(id=${task.id})}" th:object="${task}">
+    <div class="form-group">
+      <label>Название задания</label>
+      <input type="text" th:field="*{title}" required>
+    </div>
+    <div class="form-group">
+      <label>Описание</label>
+      <textarea rows="4" th:field="*{description}"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Категория</label>
+      <select th:field="*{category}" required>
+        <option th:each="type : ${disabilityTypes}" th:value="${type.name().toLowerCase()}" th:text="${type.displayName}" th:selected="${task.category == type.name().toLowerCase()}"></option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Уровень сложности</label>
+      <input type="number" th:field="*{difficultyLevel}" min="1" max="5">
+    </div>
+    <div class="form-group">
+      <label>Медиа URL</label>
+      <input type="url" th:field="*{mediaUrl}">
+    </div>
+    <div class="form-group">
+      <label>Альтернативный текст</label>
+      <input type="text" th:field="*{alternativeText}">
+    </div>
+    <div>
+      <button type="submit" class="btn">💾 Обновить</button>
+      <a th:href="@{/teacher/tasks}" class="btn btn-secondary">Отмена</a>
+    </div>
+  </form>
+</div>
+</body>
+</html>

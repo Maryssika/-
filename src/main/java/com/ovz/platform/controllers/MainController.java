@@ -183,8 +183,140 @@ public class MainController {
 
     @GetMapping("/teacher/dashboard")
     public String teacherDashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User teacher = userService.findByEmail(auth.getName());
+        if (teacher.getRole() != UserRole.TEACHER) {
+            return "redirect:/profile";
+        }
+
+        List<User> students = userService.getStudentsForTeacher(teacher.getEmail());
+        model.addAttribute("teacher", teacher);
+        model.addAttribute("students", students);
+        model.addAttribute("disabilityTypes", DisabilityType.values());
         model.addAttribute("title", "Панель учителя");
         return "teacher/dashboard";
+    }
+
+    @PostMapping("/teacher/add-student")
+    public String addStudent(@RequestParam String studentEmail, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        try {
+            userService.addStudentToTeacher(auth.getName(), studentEmail);
+            redirectAttributes.addFlashAttribute("successMessage", "Ученик добавлен");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/teacher/dashboard";
+    }
+
+    @PostMapping("/teacher/remove-student/{id}")
+    public String removeStudent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        try {
+            userService.removeStudentFromTeacher(auth.getName(), id);
+            redirectAttributes.addFlashAttribute("successMessage", "Ученик удалён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/teacher/dashboard";
+    }
+
+    @GetMapping("/teacher/student/{id}")
+    public String studentProgress(@PathVariable Long id, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User teacher = userService.findByEmail(auth.getName());
+        User student = userService.findById(id);
+
+        // Проверка, что студент принадлежит учителю
+        if (student.getTeacher() == null || !student.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/dashboard?error=access_denied";
+        }
+
+        long completed = taskService.countCompletedTasks(student);
+        long total = taskService.countTotalTasksForUser(student);
+        List<Map<String, Object>> tasksWithStatus = taskService.getTasksWithStatus(student);
+
+        // Диагностика в консоль
+        System.out.println("=== Progress for student: " + student.getEmail() + " ===");
+        System.out.println("Completed: " + completed);
+        System.out.println("Total: " + total);
+        System.out.println("TasksWithStatus size: " + (tasksWithStatus != null ? tasksWithStatus.size() : "null"));
+        if (tasksWithStatus != null && !tasksWithStatus.isEmpty()) {
+            System.out.println("First task title: " + tasksWithStatus.get(0).get("task"));
+        }
+
+        model.addAttribute("student", student);
+        model.addAttribute("completed", completed);
+        model.addAttribute("total", total);
+        model.addAttribute("tasksWithStatus", tasksWithStatus != null ? tasksWithStatus : List.of()); // защита от null
+        model.addAttribute("title", "Прогресс ученика");
+        return "teacher/student-progress";
+    }
+
+    @GetMapping("/teacher/create-task")
+    public String showCreateTaskForm(Model model) {
+        model.addAttribute("task", new EducationalTask());
+        model.addAttribute("disabilityTypes", DisabilityType.values());
+        model.addAttribute("title", "Создание задания");
+        return "teacher/create-task";
+    }
+
+    @PostMapping("/teacher/create-task")
+    public String createTask(@ModelAttribute EducationalTask task,
+                             @RequestParam String category,
+                             RedirectAttributes redirectAttributes) {
+        task.setCategory(category.toLowerCase());
+        taskService.saveTask(task);
+        redirectAttributes.addFlashAttribute("successMessage", "Задание создано");
+        return "redirect:/teacher/tasks";
+    }
+
+    @GetMapping("/teacher/tasks")
+    public String listTasks(Model model) {
+        List<EducationalTask> tasks = taskService.getAllTasks();
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("title", "Все задания");
+        return "teacher/tasks";
+    }
+
+    @GetMapping("/teacher/edit-task/{id}")
+    public String editTask(@PathVariable Long id, Model model) {
+        EducationalTask task = taskService.getTaskById(id);
+        model.addAttribute("task", task);
+        model.addAttribute("disabilityTypes", DisabilityType.values());
+        model.addAttribute("title", "Редактирование задания");
+        return "teacher/edit-task";
+    }
+
+    @PostMapping("/teacher/update-task/{id}")
+    public String updateTask(@PathVariable Long id,
+                             @ModelAttribute EducationalTask task,
+                             @RequestParam String category,
+                             RedirectAttributes redirectAttributes) {
+        task.setId(id);
+        task.setCategory(category.toLowerCase());
+        taskService.updateTask(task);
+        redirectAttributes.addFlashAttribute("successMessage", "Задание обновлено");
+        return "redirect:/teacher/tasks";
+    }
+
+    @PostMapping("/teacher/delete-task/{id}")
+    public String deleteTask(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        taskService.deleteTask(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Задание удалено");
+        return "redirect:/teacher/tasks";
     }
 
     @GetMapping("/student/dashboard")

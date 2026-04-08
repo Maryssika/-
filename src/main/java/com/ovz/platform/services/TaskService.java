@@ -54,6 +54,25 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    public List<EducationalTask> getAllTasks() {
+        return taskRepository.findAll();
+    }
+
+    @Transactional
+    public void saveTask(EducationalTask task) {
+        taskRepository.save(task);
+    }
+
+    @Transactional
+    public void updateTask(EducationalTask task) {
+        taskRepository.save(task);
+    }
+
+    @Transactional
+    public void deleteTask(Long id) {
+        taskRepository.deleteById(id);
+    }
+
     // Отметить задание как выполненное
     @Transactional
     public void markTaskAsCompleted(User user, EducationalTask task) {
@@ -81,17 +100,26 @@ public class TaskService {
     }
 
     public List<Map<String, Object>> getTasksWithStatus(User user) {
+        if (user.getDisabilityType() == null) {
+            System.out.println("У ученика не указан тип нарушения, возвращаем пустой список");
+            return List.of();
+        }
         List<EducationalTask> allTasks = getTasksByDisabilityType(user.getDisabilityType());
+        System.out.println("All tasks for disability " + user.getDisabilityType() + ": " + allTasks.size());
+
         List<UserTaskProgress> completedProgress = progressRepository.findByUserAndCompletedTrue(user);
         Set<Long> completedIds = completedProgress.stream()
                 .map(p -> p.getTask().getId())
                 .collect(Collectors.toSet());
 
-        return allTasks.stream().map(task -> {
+        List<Map<String, Object>> result = allTasks.stream().map(task -> {
             Map<String, Object> map = new HashMap<>();
             map.put("task", task);
             map.put("completed", completedIds.contains(task.getId()));
             return map;
         }).collect(Collectors.toList());
+
+        System.out.println("Result size: " + result.size());
+        return result;
     }
 }

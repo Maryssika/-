@@ -133,4 +133,46 @@ public class UserService {
     public void save(User user) {
         userRepository.save(user);
     }
+
+    @Transactional
+    public List<User> getStudentsForTeacher(String teacherEmail) {
+        User teacher = findByEmail(teacherEmail);
+        if (teacher.getRole() != UserRole.TEACHER) {
+            throw new IllegalArgumentException("Пользователь не является учителем");
+        }
+        return teacher.getStudents();
+    }
+
+    @Transactional
+    public void addStudentToTeacher(String teacherEmail, String studentEmail) {
+        User teacher = findByEmail(teacherEmail);
+        if (teacher.getRole() != UserRole.TEACHER) {
+            throw new IllegalArgumentException("Учитель не найден");
+        }
+        User student = userRepository.findByEmail(studentEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Ученик не найден"));
+        if (student.getRole() != UserRole.STUDENT) {
+            throw new IllegalArgumentException("Пользователь не является учеником");
+        }
+        student.setTeacher(teacher);
+        userRepository.save(student);
+    }
+
+    @Transactional
+    public void removeStudentFromTeacher(String teacherEmail, Long studentId) {
+        User teacher = findByEmail(teacherEmail);
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Ученик не найден"));
+        if (student.getTeacher() == null || !student.getTeacher().getId().equals(teacher.getId())) {
+            throw new SecurityException("Этот ученик не привязан к вам");
+        }
+        student.setTeacher(null);
+        userRepository.save(student);
+    }
+
+    @Transactional(readOnly = true)
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+    }
 }

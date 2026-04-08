@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Прогресс ученика</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+    }
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    h1 { margin-bottom: 1rem; border-left: 4px solid #667eea; padding-left: 1rem; }
+    .stats { display: flex; gap: 1rem; margin: 1.5rem 0; flex-wrap: wrap; }
+    .stat-card { flex: 1; background: #f7fafc; padding: 1rem; border-radius: 1rem; text-align: center; }
+    .stat-number { font-size: 2rem; font-weight: bold; color: #667eea; }
+    .progress-bar { background: #e2e8f0; border-radius: 1rem; overflow: hidden; margin: 1rem 0; }
+    .progress-fill { background: linear-gradient(90deg, #667eea, #764ba2); height: 1.5rem; line-height: 1.5rem; color: white; text-align: center; width: 0%; }
+    .task-list { margin-top: 2rem; }
+    .task-item { display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    .completed { color: #48bb78; font-weight: bold; }
+    .not-completed { color: #f56565; }
+    .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 2rem; text-decoration: none; background: #edf2f7; margin-top: 1rem; }
+    .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+    .alert { background: #fefcbf; padding: 1rem; border-radius: 0.75rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📊 Прогресс: <span th:text="${student.fullName}"></span></h1>
+  <p><strong>Email:</strong> <span th:text="${student.email}"></span></p>
+  <p><strong>Тип нарушения:</strong>
+    <span th:if="${student.disabilityType != null}" th:text="${student.disabilityType.displayName}"></span>
+    <span th:unless="${student.disabilityType != null}" style="color: red;">Не указан</span>
+  </p>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number" th:text="${completed}">0</div>
+      <div>Выполнено</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" th:text="${total}">0</div>
+      <div>Всего заданий</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" th:text="${total > 0 ? (completed * 100 / total) : 0} + '%'">0%</div>
+      <div>Процент</div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" th:style="|width: ${total > 0 ? (completed * 100 / total) : 0}%;|">
+      <span th:text="${total > 0 ? (completed * 100 / total) : 0} + '%'"></span>
+    </div>
+  </div>
+
+  <div class="task-list">
+    <h3>📋 Задания</h3>
+    <!-- Если список пустой или null, показываем предупреждение -->
+    <div th:if="${tasksWithStatus == null or tasksWithStatus.isEmpty()}" class="alert">
+      ⚠️ Нет заданий для этого ученика.
+      Возможные причины: у ученика не выбран тип нарушения, или в системе нет заданий для его категории.
+    </div>
+    <div th:unless="${tasksWithStatus == null or tasksWithStatus.isEmpty()}">
+      <div th:each="item : ${tasksWithStatus}" class="task-item">
+        <span th:text="${item.task.title}"></span>
+        <span th:class="${item.completed} ? 'completed' : 'not-completed'">
+                    <span th:if="${item.completed}">✅ Выполнено</span>
+                    <span th:unless="${item.completed}">❌ Не выполнено</span>
+                </span>
+      </div>
+    </div>
+  </div>
+
+  <a th:href="@{/teacher/dashboard}" class="btn btn-primary">← Назад</a>
+</div>
+</body>
+</html>
