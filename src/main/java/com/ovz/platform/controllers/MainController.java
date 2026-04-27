@@ -11,6 +11,7 @@ import com.ovz.platform.services.TaskService;
 import com.ovz.platform.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -177,6 +178,24 @@ public class MainController {
     // Ролевые страницы
     @GetMapping("/admin/dashboard")
     public String adminDashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User admin = userService.findByEmail(auth.getName());
+        if (admin.getRole() != UserRole.ADMIN) {
+            return "redirect:/profile";
+        }
+
+        // Статистика
+        long totalUsers = userService.countAllUsers();
+        long totalTasks = taskService.countAllTasks();
+        long completedTasks = taskService.countAllCompletedTasks();
+
+        model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("totalTasks", totalTasks);
+        model.addAttribute("completedTasks", completedTasks);
+        model.addAttribute("users", userService.findAllUsers());
         model.addAttribute("title", "Панель администратора");
         return "admin/dashboard";
     }

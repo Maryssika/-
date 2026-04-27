@@ -175,4 +175,92 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
     }
+
+    @Transactional(readOnly = true)
+    public long countAllUsers() {
+        return userRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Transactional
+    public void updateUserByAdmin(Long id, UserRegistrationDto dto) {
+        User user = findById(id);
+
+        // 1. Обновляем основные поля
+        if (dto.getFullName() != null && !dto.getFullName().trim().isEmpty()) {
+            user.setFullName(dto.getFullName());
+        }
+
+        // 2. Email — с проверкой уникальности
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            String newEmail = dto.getEmail().trim();
+            if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+                throw new IllegalArgumentException("Пользователь с таким email уже существует");
+            }
+            user.setEmail(newEmail);
+        }
+
+        // 3. Пароль — меняем, только если введён новый и он прошёл валидацию
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            if (dto.getConfirmPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
+                throw new IllegalArgumentException("Пароли не совпадают");
+            }
+            if (dto.getPassword().length() < 8) {
+                throw new IllegalArgumentException("Пароль должен содержать минимум 8 символов");
+            }
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        // 4. Роль
+        if (dto.getRole() != null && !dto.getRole().isBlank()) {
+            try {
+                UserRole role = UserRole.valueOf(dto.getRole().toUpperCase());
+                user.setRole(role);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Некорректная роль: " + dto.getRole());
+            }
+        }
+
+        // 5. Тип нарушения (только для STUDENT)
+        if (user.getRole() == UserRole.STUDENT) {
+            if (dto.getDisabilityType() != null && !dto.getDisabilityType().isEmpty()) {
+                try {
+                    user.setDisabilityType(DisabilityType.valueOf(dto.getDisabilityType().toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    user.setDisabilityType(DisabilityType.OTHER);
+                }
+            } else {
+                user.setDisabilityType(null);
+            }
+        } else {
+            user.setDisabilityType(null);
+        }
+
+        // 6. Сохраняем
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        User user = findById(id);
+        // При необходимости удалить связи (зависит от каскадов)
+        // Например, если удаляем учителя, можно отвязать учеников
+        if (user.getRole() == UserRole.TEACHER) {
+            for (User student : user.getStudents()) {
+                student.setTeacher(null);
+                userRepository.save(student);
+            }
+        }
+        if (user.getRole() == UserRole.PARENT) {
+            for (User child : user.getChildren()) {
+                child.setParent(null);
+                userRepository.save(child);
+            }
+        }
+        userRepository.delete(user);
+    }
 }

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Панель администратора</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Bootstrap (опционально) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">OVZ Platform</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" th:href="@{/profile}">Профиль</a>
+            <a class="nav-link" th:href="@{/settings}">Настройки</a>
+            <a class="nav-link" th:href="@{/logout}">Выйти</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1>Панель администратора</h1>
+    <p>Добро пожаловать, <span th:text="${#authentication.name}">admin@example.com</span>!</p>
+
+    <!-- Статистика -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Пользователи</div>
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${totalUsers}">0</h5>
+                    <p class="card-text">Всего зарегистрировано</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Задания</div>
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${totalTasks}">0</h5>
+                    <p class="card-text">Всего заданий в системе</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Активность</div>
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${completedTasks}">0</h5>
+                    <p class="card-text">Выполнено заданий</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Управление пользователями -->
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Список пользователей</span>
+            <a th:href="@{/admin/users/create}" class="btn btn-sm btn-primary">+ Добавить пользователя</a>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>ФИО</th>
+                    <th>Роль</th>
+                    <th>Тип нарушения</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.id}">1</td>
+                    <td th:text="${user.email}">user@example.com</td>
+                    <td th:text="${user.fullName}">Иванов Иван</td>
+                    <td th:text="${user.role.displayName}">Ученик</td>
+                    <td th:text="${user.disabilityType?.displayName ?: '—'}">—</td>
+                    <td>
+                        <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning">Редактировать</a>
+                        <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить пользователя?')">Удалить</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Управление заданиями (быстрый доступ) -->
+    <div class="mt-4 d-flex gap-2">
+        <a th:href="@{/admin/tasks}" class="btn btn-outline-secondary">
+            🔍 Все задания (админ)
+        </a>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

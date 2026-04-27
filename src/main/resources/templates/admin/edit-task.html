@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Редактирование задания</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">OVZ Platform</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" th:href="@{/admin/dashboard}">Панель</a>
+            <a class="nav-link" th:href="@{/admin/tasks}">Все задания</a>
+            <a class="nav-link" th:href="@{/profile}">Профиль</a>
+            <a class="nav-link" th:href="@{/logout}">Выйти</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1 th:text="${task.id == null ? 'Создание задания' : 'Редактирование задания'}">Форма</h1>
+
+    <form th:action="@{${task.id == null ? '/admin/tasks/create' : '/admin/tasks/update/' + task.id}}"
+          th:object="${task}" method="post">
+        <div class="mb-3">
+            <label for="title" class="form-label">Название</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Описание</label>
+            <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Категория (тип нарушения)</label>
+            <select class="form-select" id="category" name="category">
+                <option value="">Выберите категорию</option>
+                <option th:each="dt : ${disabilityTypes}"
+                        th:value="${dt.name().toLowerCase()}"
+                        th:text="${dt.displayName}"
+                        th:selected="${task.category == dt.name().toLowerCase()}"></option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="difficultyLevel" class="form-label">Уровень сложности</label>
+            <input type="number" class="form-control" id="difficultyLevel" th:field="*{difficultyLevel}" min="1" max="5">
+        </div>
+        <div class="mb-3">
+            <label for="mediaUrl" class="form-label">Ссылка на медиа</label>
+            <input type="text" class="form-control" id="mediaUrl" th:field="*{mediaUrl}">
+        </div>
+        <div class="mb-3">
+            <label for="alternativeText" class="form-label">Альтернативный текст</label>
+            <input type="text" class="form-control" id="alternativeText" th:field="*{alternativeText}">
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a th:href="@{/admin/tasks}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

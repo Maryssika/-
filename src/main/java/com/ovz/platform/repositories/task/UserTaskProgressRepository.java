@@ -10,4 +10,5 @@ public interface UserTaskProgressRepository extends JpaRepository<UserTaskProgre
     List<UserTaskProgress> findByUserAndCompletedTrue(User user);
     List<UserTaskProgress> findByUser(User user);
     boolean existsByUserAndTaskAndCompletedTrue(User user, EducationalTask task);
+    long countByCompletedTrue();
 }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Все задания (администратор)</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">OVZ Platform</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" th:href="@{/admin/dashboard}">Панель</a>
+            <a class="nav-link" th:href="@{/profile}">Профиль</a>
+            <a class="nav-link" th:href="@{/logout}">Выйти</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1>📋 Все задания в системе</h1>
+    <p>Просмотр, редактирование и удаление любых заданий.</p>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <a th:href="@{/admin/tasks/create}" class="btn btn-success mb-3">+ Создать задание</a>
+    <a th:href="@{/admin/dashboard}" class="btn btn-secondary mb-3">← Назад в панель</a>
+
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Сложность</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="task : ${tasks}">
+            <td th:text="${task.id}">1</td>
+            <td th:text="${task.title}">Пример задания</td>
+            <td th:text="${task.category}">visual</td>
+            <td th:text="${task.difficultyLevel}">3</td>
+            <td>
+                <a th:href="@{/admin/tasks/edit/{id}(id=${task.id})}" class="btn btn-sm btn-warning">✏️</a>
+                <form th:action="@{/admin/tasks/delete/{id}(id=${task.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить задание?')">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

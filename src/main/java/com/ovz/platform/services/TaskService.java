@@ -122,4 +122,12 @@ public class TaskService {
         System.out.println("Result size: " + result.size());
         return result;
     }
+
+    public long countAllTasks() {
+        return taskRepository.count();
+    }
+
+    public long countAllCompletedTasks() {
+        return progressRepository.countByCompletedTrue();
+    }
 }
