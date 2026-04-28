@@ -1,17 +1,18 @@
 package com.ovz.platform.services;
 
 import com.ovz.platform.dto.UserRegistrationDto;
-import com.ovz.platform.models.user.AccessibilityProfile;
-import com.ovz.platform.models.user.DisabilityType;
-import com.ovz.platform.models.user.User;
-import com.ovz.platform.models.user.UserRole;
+import com.ovz.platform.models.user.*;
+import com.ovz.platform.repositories.user.PasswordResetTokenRepository;
 import com.ovz.platform.repositories.user.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -262,5 +263,37 @@ public class UserService {
             }
         }
         userRepository.delete(user);
+    }
+
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+
+    @Transactional
+    public String createPasswordResetToken(User user) {
+        // Удаляем старые токены
+        tokenRepository.deleteByUser(user);
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken(token, user, LocalDateTime.now().plusHours(24));
+        tokenRepository.save(resetToken);
+        return token;
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword, String confirmPassword) {
+        PasswordResetToken resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Недействительный или просроченный токен"));
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Токен истёк");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Пароли не совпадают");
+        }
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("Пароль должен содержать минимум 8 символов");
+        }
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        tokenRepository.delete(resetToken);
     }
 }

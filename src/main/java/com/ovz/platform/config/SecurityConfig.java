@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
@@ -32,16 +33,23 @@ public class SecurityConfig {
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/parent/**").hasRole("PARENT")
                         .requestMatchers("/settings", "/settings/**", "/notifications").authenticated()
+                        .requestMatchers("/forgot-password", "/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .successHandler(customAuthenticationSuccessHandler())  // Используем кастомный обработчик
+                        .successHandler(customAuthenticationSuccessHandler())
+                        .failureHandler(customAuthenticationFailureHandler())   // новый обработчик
                         .failureUrl("/login?error=true")
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .permitAll()
+                )
+                .rememberMe(remember -> remember
+                        .key("uniqueAndSecretKeyForOVZPlatform")
+                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 7 дней
+                        .rememberMeParameter("remember-me")
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -64,5 +72,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
         return new CustomAuthenticationSuccessHandler();
+    }
+
+    @Bean
+    public AuthenticationFailureHandler customAuthenticationFailureHandler() {
+        return new CustomAuthenticationFailureHandler();
     }
 }

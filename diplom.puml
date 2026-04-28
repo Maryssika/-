@@ -1,0 +1,345 @@
+@startuml
+class com.ovz.platform.models.user.AccessibilityProfile {
+- Long id
+- Boolean highContrast
+- String fontSize
+- Boolean subtitlesEnabled
+- Boolean screenReaderEnabled
+- String colorScheme
++ Long getId()
++ void setId(Long)
++ Boolean getHighContrast()
++ void setHighContrast(Boolean)
++ String getFontSize()
++ void setFontSize(String)
++ Boolean getSubtitlesEnabled()
++ void setSubtitlesEnabled(Boolean)
++ Boolean getScreenReaderEnabled()
++ void setScreenReaderEnabled(Boolean)
++ String getColorScheme()
++ void setColorScheme(String)
+}
+
+
+class com.ovz.platform.dto.CourseDto {
+- String title
+- String description
+- String color
+- Integer completed
+- Integer total
++ String getTitle()
++ String getDescription()
++ String getColor()
++ Integer getCompleted()
++ Integer getTotal()
+}
+
+
+class com.ovz.platform.controllers.UserController {
+- UserService userService
++ String editUser(Long,Model)
++ String updateUser(Long,UserRegistrationDto,RedirectAttributes)
++ String listUsers(Model)
+}
+
+
+class com.ovz.platform.PlatformApplication {
+- String h2Url
++ {static} void main(String[])
++ void init()
+}
+
+
+class com.ovz.platform.models.user.User {
+- Long id
+- String email
+- String password
+- String fullName
+- UserRole role
+- DisabilityType disabilityType
+- AccessibilityProfile accessibilityProfile
+- LocalDateTime createdAt
+- LocalDateTime updatedAt
+- User parent
+- List<User> children
+- User teacher
+- List<User> students
++ DisabilityType getDisabilityType()
++ void setDisabilityType(DisabilityType)
++ User getTeacher()
++ void setTeacher(User)
++ List<User> getStudents()
++ void setStudents(List<User>)
++ User getParent()
++ void setParent(User)
++ List<User> getChildren()
++ void setChildren(List<User>)
++ Long getId()
++ String getEmail()
++ String getPassword()
++ String getFullName()
++ UserRole getRole()
++ AccessibilityProfile getAccessibilityProfile()
++ LocalDateTime getCreatedAt()
++ LocalDateTime getUpdatedAt()
++ void setId(Long)
++ void setEmail(String)
++ void setPassword(String)
++ void setFullName(String)
++ void setRole(UserRole)
++ void setAccessibilityProfile(AccessibilityProfile)
++ void setCreatedAt(LocalDateTime)
++ void setUpdatedAt(LocalDateTime)
+# void onCreate()
+# void onUpdate()
+}
+
+
+class com.ovz.platform.services.CustomUserDetailsService {
+- UserRepository userRepository
++ UserDetails loadUserByUsername(String)
+}
+
+
+class com.ovz.platform.config.H2DatabaseConfig {
++ DataSource h2DataSource()
++ LocalContainerEntityManagerFactoryBean h2EntityManagerFactory(EntityManagerFactoryBuilder,DataSource)
++ PlatformTransactionManager h2TransactionManager(LocalContainerEntityManagerFactoryBean)
+}
+
+class com.ovz.platform.models.task.EducationalTask {
+- Long id
+- String title
+- String description
+- String category
+- Integer difficultyLevel
+- String mediaUrl
+- String alternativeText
++ Long getId()
++ void setId(Long)
++ String getTitle()
++ void setTitle(String)
++ String getDescription()
++ void setDescription(String)
++ String getCategory()
++ void setCategory(String)
++ Integer getDifficultyLevel()
++ void setDifficultyLevel(Integer)
++ String getMediaUrl()
++ void setMediaUrl(String)
++ String getAlternativeText()
++ void setAlternativeText(String)
++ String toString()
+}
+
+
+class com.ovz.platform.controllers.TaskController {
+- TaskService taskService
+- UserService userService
++ String viewTask(Long,Model)
++ String submitAnswer(Long,String,RedirectAttributes)
+}
+
+
+interface com.ovz.platform.repositories.task.EducationalTaskRepository {
+~ List<EducationalTask> findByCategory(String)
+}
+
+interface com.ovz.platform.repositories.user.UserRepository {
+~ Optional<User> findByEmail(String)
+~ boolean existsByEmail(String)
+~ List<User> findByParent(User)
+~ long count()
+}
+
+class com.ovz.platform.services.UserService {
+- UserRepository userRepository
+- PasswordEncoder passwordEncoder
++ User registerUser(UserRegistrationDto)
++ User findByEmail(String)
++ List<User> getChildren(User)
++ User getChildForParent(User,Long)
++ void updateUserProfile(String,String,String,String,boolean,boolean,boolean,String,String)
++ void addChildToParent(String,String)
++ void save(User)
++ List<User> getStudentsForTeacher(String)
++ void addStudentToTeacher(String,String)
++ void removeStudentFromTeacher(String,Long)
++ User findById(Long)
++ long countAllUsers()
++ List<User> findAllUsers()
++ void updateUserByAdmin(Long,UserRegistrationDto)
++ void deleteUser(Long)
+}
+
+
+enum com.ovz.platform.models.user.DisabilityType {
++  VISUAL
++  AUDITORY
++  MOTOR
++  COGNITIVE
++  SPEECH
++  OTHER
+- String displayName
++ String getDisplayName()
+}
+
+
+class com.ovz.platform.controllers.MainController {
+- UserService userService
+- TaskService taskService
++ String home(Model)
++ String about(Model)
++ String features(Model)
++ String learning(Model)
++ String demo(Model)
++ String audioTaskDemo(Model)
++ String colorTaskDemo(Model)
++ String puzzleTaskDemo(Model)
++ String team(Model)
++ String contacts(Model)
++ String login(Model,String,String)
++ String register(Model)
++ String processRegistration(UserRegistrationDto,BindingResult,Model,RedirectAttributes)
++ String registrationSuccess(Model)
++ String profile(Model)
++ String adminDashboard(Model)
++ String teacherDashboard(Model)
++ String addStudent(String,RedirectAttributes)
++ String removeStudent(Long,RedirectAttributes)
++ String studentProgress(Long,Model)
++ String showCreateTaskForm(Model)
++ String createTask(EducationalTask,String,RedirectAttributes)
++ String listTasks(Model)
++ String editTask(Long,Model)
++ String updateTask(Long,EducationalTask,String,RedirectAttributes)
++ String deleteTask(Long,RedirectAttributes)
++ String studentDashboard(Model)
++ String parentDashboard(Model)
++ String parentChildDetails(Long,Model)
++ String showAddChildForm(Model)
++ String addChild(String,RedirectAttributes)
++ String settings(Model)
++ String updateSettings(String,String,String,boolean,boolean,boolean,String,String,RedirectAttributes)
++ String notifications(Model)
+- List<CourseDto> getDummyCourses()
++ ResponseEntity<?> quickUpdate(Map<String,Object>)
+}
+
+
+enum com.ovz.platform.models.user.UserRole {
++  STUDENT
++  PARENT
++  TEACHER
++  ADMIN
+- String displayName
++ String getDisplayName()
+}
+
+
+class com.ovz.platform.dto.UserRegistrationDto {
+- String email
+- String password
+- String confirmPassword
+- String fullName
+- String role
+- String disabilityType
+- String parentEmail
++ String getParentEmail()
++ void setParentEmail(String)
++ String getEmail()
++ void setEmail(String)
++ String getPassword()
++ void setPassword(String)
++ String getConfirmPassword()
++ void setConfirmPassword(String)
++ String getFullName()
++ void setFullName(String)
++ String getRole()
++ void setRole(String)
++ String getDisabilityType()
++ void setDisabilityType(String)
++ boolean isPasswordValid()
+}
+
+
+interface com.ovz.platform.repositories.task.UserTaskProgressRepository {
+~ List<UserTaskProgress> findByUserAndCompletedTrue(User)
+~ List<UserTaskProgress> findByUser(User)
+~ boolean existsByUserAndTaskAndCompletedTrue(User,EducationalTask)
+~ long countByCompletedTrue()
+}
+
+class com.ovz.platform.config.SecurityConfig {
++ BCryptPasswordEncoder passwordEncoder()
++ SecurityFilterChain filterChain(HttpSecurity)
++ AuthenticationSuccessHandler customAuthenticationSuccessHandler()
+}
+
+class com.ovz.platform.config.CustomAuthenticationSuccessHandler {
++ void onAuthenticationSuccess(HttpServletRequest,HttpServletResponse,Authentication)
+}
+
+class com.ovz.platform.services.TaskService {
+- EducationalTaskRepository taskRepository
+- UserTaskProgressRepository progressRepository
++ List<EducationalTask> getTasksByDisabilityType(DisabilityType)
++ EducationalTask getTaskById(Long)
++ List<EducationalTask> getUncompletedTasksForUser(User)
++ List<EducationalTask> getAllTasks()
++ void saveTask(EducationalTask)
++ void updateTask(EducationalTask)
++ void deleteTask(Long)
++ void markTaskAsCompleted(User,EducationalTask)
++ long countCompletedTasks(User)
++ long countTotalTasksForUser(User)
++ boolean isTaskCompleted(User,EducationalTask)
++ List<Map<String,Object>> getTasksWithStatus(User)
++ long countAllTasks()
++ long countAllCompletedTasks()
+}
+
+
+class com.ovz.platform.models.task.UserTaskProgress {
+- Long id
+- User user
+- EducationalTask task
+- boolean completed
+- LocalDateTime completedAt
++ Long getId()
++ void setId(Long)
++ User getUser()
++ void setUser(User)
++ EducationalTask getTask()
++ void setTask(EducationalTask)
++ boolean isCompleted()
++ void setCompleted(boolean)
++ LocalDateTime getCompletedAt()
++ void setCompletedAt(LocalDateTime)
+}
+
+
+class com.ovz.platform.controllers.AdminController {
+- UserService userService
+- TaskService taskService
++ String showCreateUserForm(Model)
++ String createUser(UserRegistrationDto,BindingResult,RedirectAttributes)
++ String editUser(Long,Model)
++ String updateUser(Long,UserRegistrationDto,RedirectAttributes)
++ String adminTasks(Model)
++ String showCreateForm(Model)
++ String createTask(EducationalTask,String,RedirectAttributes)
++ String editTask(Long,Model)
++ String updateTask(Long,EducationalTask,String,RedirectAttributes)
++ String deleteTask(Long,RedirectAttributes)
+}
+
+
+
+
+org.springframework.security.core.userdetails.UserDetailsService <|.. com.ovz.platform.services.CustomUserDetailsService
+org.springframework.data.jpa.repository.JpaRepository <|-- com.ovz.platform.repositories.task.EducationalTaskRepository
+org.springframework.data.jpa.repository.JpaRepository <|-- com.ovz.platform.repositories.user.UserRepository
+org.springframework.data.jpa.repository.JpaRepository <|-- com.ovz.platform.repositories.task.UserTaskProgressRepository
+org.springframework.security.web.authentication.AuthenticationSuccessHandler <|.. com.ovz.platform.config.CustomAuthenticationSuccessHandler
+@enduml

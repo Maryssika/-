@@ -138,6 +138,24 @@
         letter-spacing: 1px;
         margin-bottom: 10px;
     }
+    .star-card .stat-number {
+    color: #ffc107;
+    text-shadow: 0 0 5px rgba(255,193,7,0.5);
+}
+.star-hint {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 8px;
+}
+/* Анимация при загрузке */
+@keyframes starGlow {
+    0% { text-shadow: 0 0 0 #ffc107; transform: scale(1); }
+    50% { text-shadow: 0 0 20px #ffc107; transform: scale(1.1); }
+    100% { text-shadow: 0 0 0 #ffc107; transform: scale(1); }
+}
+.stat-card.star-card .stat-number {
+    animation: starGlow 0.6s ease-out;
+}
     .stat-number {
         font-size: 2.5em;
         font-weight: 700;
@@ -312,6 +330,11 @@
       </div>
       <div style="margin-top: 5px; color: #666;" th:text="'Цель: ' + ${studyGoalMinutes} + ' мин'">Цель: 60 мин</div>
     </div>
+    <div class="stat-card star-card">
+      <h3>⭐ Накоплено звёзд</h3>
+      <div class="stat-number" th:text="${stars}">0</div>
+      <div class="star-hint">За каждое задание – 1 звезда</div>
+    </div>
   </div>
 
   <!-- Персонализированные задания (только невыполненные) -->
@@ -374,7 +397,6 @@
       })
       .catch(error => {
           console.error('Ошибка:', error);
-          alert('Не удалось сохранить настройки. Попробуйте позже.');
       });
   }
 </script>

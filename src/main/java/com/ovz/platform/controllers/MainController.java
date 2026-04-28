@@ -160,6 +160,48 @@ public class MainController {
         return "registration-success";
     }
 
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordForm() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam("email") String email,
+                                        RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByEmail(email);
+            String token = userService.createPasswordResetToken(user);
+            // В реальном проекте отправьте email с ссылкой:
+            // http://localhost:8080/reset-password?token=...
+            System.out.println("Ссылка для сброса пароля: http://localhost:8080/reset-password?token=" + token);
+            redirectAttributes.addFlashAttribute("message", "Инструкция по сбросу пароля отправлена на ваш email (в консоль)");
+        } catch (UsernameNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Пользователь с таким email не найден");
+        }
+        return "redirect:/forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
+        model.addAttribute("token", token);
+        return "reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@RequestParam("token") String token,
+                                       @RequestParam("password") String password,
+                                       @RequestParam("confirmPassword") String confirmPassword,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            userService.resetPassword(token, password, confirmPassword);
+            redirectAttributes.addFlashAttribute("successMessage", "Пароль успешно изменён. Войдите с новым паролем.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/reset-password?token=" + token;
+        }
+    }
+
     @GetMapping("/profile")
     public String profile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -353,7 +395,7 @@ public class MainController {
         }
 
         model.addAttribute("fullName", user.getFullName() != null ? user.getFullName() : "Ученик");
-
+        model.addAttribute("stars", user.getStars());
         // Реальная статистика
         long tasksCompleted = taskService.countCompletedTasks(user);
         long tasksTotal = taskService.countTotalTasksForUser(user);

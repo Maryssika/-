@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
 
-// УБРАТЬ @Component отсюда!
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
@@ -19,10 +18,25 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
+        String selectedRole = request.getParameter("selectedRole");
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+        // Получаем реальную роль пользователя из Spring Security
+        String userRole = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("")
+                .replace("ROLE_", "");
+
+        // Если роль не совпадает с выбранной на форме – ошибка
+        if (selectedRole != null && !selectedRole.isEmpty() && !selectedRole.equalsIgnoreCase(userRole)) {
+            response.sendRedirect("/login?error=role_mismatch&role=" + selectedRole);
+            return;
+        }
+
+        // Определяем URL редиректа по роли
         String redirectUrl = "/profile"; // По умолчанию
 
-        // Определяем URL в зависимости от роли
         for (GrantedAuthority authority : authorities) {
             String role = authority.getAuthority();
             if (role.equals("ROLE_" + UserRole.ADMIN.name())) {

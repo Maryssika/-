@@ -6,6 +6,7 @@ import com.ovz.platform.models.task.UserTaskProgress;
 import com.ovz.platform.models.user.User;
 import com.ovz.platform.repositories.task.EducationalTaskRepository;
 import com.ovz.platform.repositories.task.UserTaskProgressRepository;
+import com.ovz.platform.repositories.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -20,11 +21,13 @@ public class TaskService {
 
     private final EducationalTaskRepository taskRepository;
     private final UserTaskProgressRepository progressRepository;
+    private final UserRepository userRepository;
 
     public TaskService(EducationalTaskRepository taskRepository,
-                       UserTaskProgressRepository progressRepository) {
+                       UserTaskProgressRepository progressRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.progressRepository = progressRepository;
+        this.userRepository = userRepository;
     }
 
     // Получить задания по типу нарушения
@@ -73,16 +76,23 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    // Отметить задание как выполненное
     @Transactional
     public void markTaskAsCompleted(User user, EducationalTask task) {
-        UserTaskProgress progress = new UserTaskProgress();
-        progress.setUser(user);
-        progress.setTask(task);
-        progress.setCompleted(true);
-        progress.setCompletedAt(LocalDateTime.now());
-        progressRepository.save(progress);
+        // Не начисляем звёзды повторно, если задание уже выполнено
+        if (!isTaskCompleted(user, task)) {
+            UserTaskProgress progress = new UserTaskProgress();
+            progress.setUser(user);
+            progress.setTask(task);
+            progress.setCompleted(true);
+            progress.setCompletedAt(LocalDateTime.now());
+            progressRepository.save(progress);
+
+            // Начисляем 1 звезду за задание
+            user.setStars(user.getStars() + 1);
+            userRepository.save(user);
+        }
     }
+
 
     // Количество выполненных заданий пользователем
     public long countCompletedTasks(User user) {

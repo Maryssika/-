@@ -124,8 +124,14 @@
     </div>
 
     <div class="form-group" style="display: flex; align-items: center;">
-      <input type="checkbox" id="remember" name="remember" style="width: auto; margin-right: 10px;">
+      <input type="checkbox" id="remember" name="remember-me" style="width: auto; margin-right: 10px;">
       <label for="remember" style="margin: 0;">Запомнить меня</label>
+    </div>
+
+    <input type="hidden" id="selectedRole" name="selectedRole" value="teacher">
+    <div th:if="${param.error}" class="error">
+      <span th:if="${param.error[0] == 'role_mismatch'}" th:text="'Ошибка: вы пытаетесь войти как ' + ${param.role[0]} + ', но ваш аккаунт имеет другую роль.'">Ошибка роли</span>
+      <span th:unless="${param.error[0] == 'role_mismatch'}" th:text="'Неверный email или пароль'">Ошибка</span>
     </div>
 
     <button type="submit" class="btn-login">Войти</button>
@@ -133,6 +139,7 @@
 
   <div class="links">
     <a href="/register">Зарегистрироваться</a>
+    <a href="/forgot-password">Забыли пароль?</a>
     <a href="/">На главную</a>
   </div>
 </div>
@@ -143,6 +150,7 @@
           btn.classList.remove('active');
       });
       event.target.classList.add('active');
+      document.getElementById('selectedRole').value = role;
   }
 </script>
 </body>
