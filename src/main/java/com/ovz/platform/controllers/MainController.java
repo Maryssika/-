@@ -39,7 +39,8 @@ public class MainController {
     }
 
     @GetMapping("/")
-    public String home(Model model) {
+    public String home(Model model, Authentication authentication) {
+        System.out.println("GET /, authentication = " + (authentication != null ? authentication.getName() : "null"));
         model.addAttribute("title", "Образовательная платформа для детей с ОВЗ");
         return "home";
     }

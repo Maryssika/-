@@ -54,10 +54,11 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll()
+                        .addLogoutHandler((request, response, authentication) -> {
+                            System.out.println("LOGOUT вызван: " + request.getRequestURI());
+                        })
                 )
+
                 // Для H2 Console
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.disable())
