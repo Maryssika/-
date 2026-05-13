@@ -69,14 +69,12 @@ public class TaskController {
                                @RequestParam("answer") String answer,
                                RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return "redirect:/login";
-        }
+        if (auth == null || !auth.isAuthenticated()) return "redirect:/login";
         User user = userService.findByEmail(auth.getName());
         EducationalTask task = taskService.getTaskById(id);
 
-        // Отмечаем задание выполненным
         taskService.markTaskAsCompleted(user, task);
+        taskService.completeAssignedTask(user, task);  // <-- добавляем эту строку
 
         redirectAttributes.addFlashAttribute("successMessage", "Задание выполнено! Молодец!");
         return "redirect:/student/dashboard";

@@ -1,6 +1,11 @@
 package com.ovz.platform.models.task;
 import jakarta.persistence.*;
 import lombok.Data;
+import com.ovz.platform.models.user.User;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "educational_tasks")
 @Data
@@ -108,4 +113,10 @@ public class EducationalTask {
                 ", difficultyLevel=" + difficultyLevel +
                 '}';
     }
+
+    @ManyToMany(mappedBy = "assignedTasks")
+    private List<User> assignedStudents = new ArrayList<>();
+
+    public List<User> getAssignedStudents() { return assignedStudents; }
+    public void setAssignedStudents(List<User> assignedStudents) { this.assignedStudents = assignedStudents; }
 }

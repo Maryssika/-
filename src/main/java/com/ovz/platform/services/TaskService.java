@@ -10,10 +10,7 @@ import com.ovz.platform.repositories.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,13 +44,20 @@ public class TaskService {
 
     // Получить невыполненные задания для пользователя
     public List<EducationalTask> getUncompletedTasksForUser(User user) {
-        List<EducationalTask> allTasks = getTasksByDisabilityType(user.getDisabilityType());
+        List<EducationalTask> personalized = getTasksByDisabilityType(user.getDisabilityType());
+        List<EducationalTask> assigned = getAssignedTasksForStudent(user);
+
+        Map<Long, EducationalTask> uniqueTasks = new LinkedHashMap<>();
+        for (EducationalTask t : personalized) uniqueTasks.put(t.getId(), t);
+        for (EducationalTask t : assigned) uniqueTasks.put(t.getId(), t);
+
         List<UserTaskProgress> completedProgress = progressRepository.findByUserAndCompletedTrue(user);
-        Set<Long> completedTaskIds = completedProgress.stream()
+        Set<Long> completedIds = completedProgress.stream()
                 .map(p -> p.getTask().getId())
                 .collect(Collectors.toSet());
-        return allTasks.stream()
-                .filter(task -> !completedTaskIds.contains(task.getId()))
+
+        return uniqueTasks.values().stream()
+                .filter(t -> !completedIds.contains(t.getId()))
                 .collect(Collectors.toList());
     }
 
@@ -93,6 +97,30 @@ public class TaskService {
         }
     }
 
+    // Назначить задание ученику
+    @Transactional
+    public void assignTaskToStudent(User student, Long taskId) {
+        EducationalTask task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Задание не найдено"));
+        if (!student.getAssignedTasks().contains(task)) {
+            student.getAssignedTasks().add(task);
+            userRepository.save(student);
+        }
+    }
+
+    // Получить назначенные задания ученика
+    public List<EducationalTask> getAssignedTasksForStudent(User student) {
+        return student.getAssignedTasks();
+    }
+
+    // Отметить выполнение назначенного задания (удаляем из списка)
+    @Transactional
+    public void completeAssignedTask(User student, EducationalTask task) {
+        if (student.getAssignedTasks().remove(task)) {
+            userRepository.save(student);
+        }
+    }
+
 
     // Количество выполненных заданий пользователем
     public long countCompletedTasks(User user) {
@@ -101,7 +129,13 @@ public class TaskService {
 
     // Общее количество заданий для типа нарушения пользователя
     public long countTotalTasksForUser(User user) {
-        return getTasksByDisabilityType(user.getDisabilityType()).size();
+        List<EducationalTask> personalized = getTasksByDisabilityType(user.getDisabilityType());
+        List<EducationalTask> assigned = getAssignedTasksForStudent(user);
+        Set<Long> uniqueIds = new HashSet<>();
+        for (EducationalTask t : personalized) uniqueIds.add(t.getId());
+        for (EducationalTask t : assigned) uniqueIds.add(t.getId());
+        return uniqueIds.size();
+
     }
 
     // Проверить, выполнено ли задание пользователем
@@ -114,22 +148,28 @@ public class TaskService {
             System.out.println("У ученика не указан тип нарушения, возвращаем пустой список");
             return List.of();
         }
-        List<EducationalTask> allTasks = getTasksByDisabilityType(user.getDisabilityType());
-        System.out.println("All tasks for disability " + user.getDisabilityType() + ": " + allTasks.size());
+        List<EducationalTask> personalized = getTasksByDisabilityType(user.getDisabilityType());
+        List<EducationalTask> assigned = getAssignedTasksForStudent(user);
 
+        // Объединяем уникальные задания по ID
+        Map<Long, EducationalTask> uniqueTasks = new LinkedHashMap<>();
+        for (EducationalTask t : personalized) uniqueTasks.put(t.getId(), t);
+        for (EducationalTask t : assigned) uniqueTasks.put(t.getId(), t);
+
+        // Получаем ID выполненных заданий
         List<UserTaskProgress> completedProgress = progressRepository.findByUserAndCompletedTrue(user);
         Set<Long> completedIds = completedProgress.stream()
                 .map(p -> p.getTask().getId())
                 .collect(Collectors.toSet());
 
-        List<Map<String, Object>> result = allTasks.stream().map(task -> {
+        // Формируем результат
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (EducationalTask task : uniqueTasks.values()) {
             Map<String, Object> map = new HashMap<>();
             map.put("task", task);
             map.put("completed", completedIds.contains(task.getId()));
-            return map;
-        }).collect(Collectors.toList());
-
-        System.out.println("Result size: " + result.size());
+            result.add(map);
+        }
         return result;
     }
 

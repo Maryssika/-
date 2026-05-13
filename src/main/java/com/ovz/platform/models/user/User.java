@@ -1,5 +1,6 @@
 package com.ovz.platform.models.user;
 
+import com.ovz.platform.models.task.EducationalTask;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -106,4 +107,15 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_assigned_tasks",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "task_id")
+    )
+    private List<EducationalTask> assignedTasks = new ArrayList<>();
+
+    public List<EducationalTask> getAssignedTasks() { return assignedTasks; }
+    public void setAssignedTasks(List<EducationalTask> assignedTasks) { this.assignedTasks = assignedTasks; }
 }

@@ -63,6 +63,10 @@
     </div>
   </div>
 
+  <div class="mb-3">
+    <a th:href="@{/teacher/assign-task/{id}(id=${student.id})}" class="btn btn-outline-primary">➕ Назначить задание</a>
+  </div>
+
   <div class="task-list">
     <h3>📋 Задания</h3>
     <!-- Если список пустой или null, показываем предупреждение -->

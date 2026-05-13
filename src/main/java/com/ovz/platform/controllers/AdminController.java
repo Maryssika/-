@@ -10,16 +10,23 @@ import com.ovz.platform.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model; // правильный импорт!
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')") // можно вынести общую проверку на уровень класса
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final UserService userService;
@@ -30,6 +37,7 @@ public class AdminController {
         this.taskService = taskService;
     }
 
+    // ------------------ Управление пользователями ------------------
     @GetMapping("/users/create")
     public String showCreateUserForm(Model model) {
         model.addAttribute("userDto", new UserRegistrationDto());
@@ -62,7 +70,6 @@ public class AdminController {
         dto.setFullName(user.getFullName());
         dto.setRole(user.getRole().name());
         dto.setDisabilityType(user.getDisabilityType() != null ? user.getDisabilityType().name() : null);
-        // Пароль не заполняем
 
         model.addAttribute("userDto", dto);
         model.addAttribute("userId", id);
@@ -86,6 +93,7 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
+    // ------------------ Управление заданиями ------------------
     @GetMapping("/tasks")
     public String adminTasks(Model model) {
         List<EducationalTask> tasks = taskService.getAllTasks();
@@ -94,7 +102,6 @@ public class AdminController {
         return "admin/tasks";
     }
 
-    // Форма создания задания (можно перенаправить на существующую учительскую или сделать свою)
     @GetMapping("/tasks/create")
     public String showCreateForm(Model model) {
         model.addAttribute("task", new EducationalTask());
@@ -103,18 +110,37 @@ public class AdminController {
         return "admin/edit-task";
     }
 
-    // Обработка создания
     @PostMapping("/tasks/create")
-    public String createTask(@ModelAttribute EducationalTask task,
+    public String createTask(@RequestParam String title,
+                             @RequestParam String description,
                              @RequestParam String category,
-                             RedirectAttributes redirectAttributes) {
+                             @RequestParam(required = false) Integer difficultyLevel,
+                             @RequestParam(required = false) MultipartFile imageFile,
+                             @RequestParam(required = false) String alternativeText,
+                             RedirectAttributes redirectAttributes) throws IOException {
+
+        EducationalTask task = new EducationalTask();
+        task.setTitle(title);
+        task.setDescription(description);
         task.setCategory(category.toLowerCase());
+        task.setDifficultyLevel(difficultyLevel);
+        task.setAlternativeText(alternativeText);
+
+        // Логирование получения файла
+        System.out.println("Create - received file: " + (imageFile != null ? imageFile.getOriginalFilename() : "null"));
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String fileName = saveImage(imageFile);
+            task.setMediaUrl("/uploads/" + fileName);
+            System.out.println("Create - saved as: " + fileName);
+        }
+        System.out.println("Create - final mediaUrl: " + task.getMediaUrl());
+
         taskService.saveTask(task);
         redirectAttributes.addFlashAttribute("successMessage", "Задание создано");
         return "redirect:/admin/tasks";
     }
 
-    // Форма редактирования
     @GetMapping("/tasks/edit/{id}")
     public String editTask(@PathVariable Long id, Model model) {
         EducationalTask task = taskService.getTaskById(id);
@@ -124,25 +150,93 @@ public class AdminController {
         return "admin/edit-task";
     }
 
-    // Сохранение изменений
     @PostMapping("/tasks/update/{id}")
     public String updateTask(@PathVariable Long id,
-                             @ModelAttribute EducationalTask task,
+                             @RequestParam String title,
+                             @RequestParam String description,
                              @RequestParam String category,
-                             RedirectAttributes redirectAttributes) {
-        task.setId(id);
+                             @RequestParam(required = false) Integer difficultyLevel,
+                             @RequestParam(required = false) MultipartFile imageFile,
+                             @RequestParam(required = false) String alternativeText,
+                             @RequestParam(required = false, defaultValue = "false") boolean removeImage,
+                             RedirectAttributes redirectAttributes) throws IOException {
+
+        EducationalTask task = taskService.getTaskById(id);
+        task.setTitle(title);
+        task.setDescription(description);
         task.setCategory(category.toLowerCase());
+        task.setDifficultyLevel(difficultyLevel);
+        task.setAlternativeText(alternativeText);
+
+        // Логирование
+        System.out.println("Update - received file: " + (imageFile != null ? imageFile.getOriginalFilename() : "null"));
+        System.out.println("Update - removeImage flag: " + removeImage);
+
+        // 1. Обработка удаления
+        if (removeImage) {
+            deleteOldImage(task.getMediaUrl());
+            task.setMediaUrl(null);
+            task.setAlternativeText(null);
+            System.out.println("Update - image removed");
+        }
+
+        // 2. Обработка загрузки нового изображения
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Удаляем старое, если есть (даже если removeImage не был отмечен)
+            if (task.getMediaUrl() != null) {
+                deleteOldImage(task.getMediaUrl());
+            }
+            String fileName = saveImage(imageFile);
+            task.setMediaUrl("/uploads/" + fileName);
+            System.out.println("Update - saved new image as: " + fileName);
+        }
+
+        System.out.println("Update - final mediaUrl: " + task.getMediaUrl());
+
         taskService.updateTask(task);
         redirectAttributes.addFlashAttribute("successMessage", "Задание обновлено");
         return "redirect:/admin/tasks";
     }
 
-    // Удаление
     @PostMapping("/tasks/delete/{id}")
     public String deleteTask(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        EducationalTask task = taskService.getTaskById(id);
+        // Удаляем привязанное изображение с диска
+        deleteOldImage(task.getMediaUrl());
         taskService.deleteTask(id);
         redirectAttributes.addFlashAttribute("successMessage", "Задание удалено");
         return "redirect:/admin/tasks";
     }
-}
 
+    // ------------------ Вспомогательные методы ------------------
+    private String saveImage(MultipartFile file) throws IOException {
+        String uploadDir = "uploads/";
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileName = UUID.randomUUID().toString() + extension;
+        Path filePath = Paths.get(uploadDir + fileName);
+        Files.write(filePath, file.getBytes());
+        return fileName;
+    }
+
+    private void deleteOldImage(String mediaUrl) {
+        if (mediaUrl != null && mediaUrl.startsWith("/uploads/")) {
+            String fileName = mediaUrl.replace("/uploads/", "");
+            Path filePath = Paths.get("uploads/" + fileName);
+            try {
+                boolean deleted = Files.deleteIfExists(filePath);
+                if (deleted) {
+                    System.out.println("Deleted old image: " + fileName);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to delete image: " + fileName);
+                e.printStackTrace();
+            }
+        }
+    }
+}

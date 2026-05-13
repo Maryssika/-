@@ -21,22 +21,24 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String selectedRole = request.getParameter("selectedRole");
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-        // Получаем реальную роль пользователя из Spring Security
+        // Получаем реальную роль пользователя
         String userRole = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .orElse("")
                 .replace("ROLE_", "");
 
-        // Если роль не совпадает с выбранной на форме – ошибка
-        if (selectedRole != null && !selectedRole.isEmpty() && !selectedRole.equalsIgnoreCase(userRole)) {
-            response.sendRedirect("/login?error=role_mismatch&role=" + selectedRole);
-            return;
+        // ЕСЛИ ПОЛЬЗОВАТЕЛЬ — АДМИНИСТРАТОР, ТО ПРОВЕРКУ ПРОПУСКАЕМ
+        if (!"ADMIN".equalsIgnoreCase(userRole)) {
+            // Для не-админов проверяем соответствие выбранной роли
+            if (selectedRole != null && !selectedRole.isEmpty() && !selectedRole.equalsIgnoreCase(userRole)) {
+                response.sendRedirect("/login?error=role_mismatch&role=" + selectedRole);
+                return;
+            }
         }
 
-        // Определяем URL редиректа по роли
-        String redirectUrl = "/profile"; // По умолчанию
-
+        // Определяем URL редиректа (оставляем как было)
+        String redirectUrl = "/profile";
         for (GrantedAuthority authority : authorities) {
             String role = authority.getAuthority();
             if (role.equals("ROLE_" + UserRole.ADMIN.name())) {

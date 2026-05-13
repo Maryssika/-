@@ -16,7 +16,9 @@
         <div class="navbar-nav ms-auto">
             <a class="nav-link" th:href="@{/profile}">Профиль</a>
             <a class="nav-link" th:href="@{/settings}">Настройки</a>
-            <a class="nav-link" th:href="@{/logout}">Выйти</a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-link nav-link">Выйти</button>
+            </form>
         </div>
     </div>
 </nav>

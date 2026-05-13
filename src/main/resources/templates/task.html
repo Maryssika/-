@@ -229,13 +229,17 @@
       Описание задания
     </div>
 
-    <div class="task-media" th:if="${task.mediaUrl != null}">
-      <!-- медиа-контент аналогично демо -->
-      <img th:if="${#strings.endsWith(task.mediaUrl, '.jpg') or #strings.endsWith(task.mediaUrl, '.jpeg') or #strings.endsWith(task.mediaUrl, '.png')}"
-           th:src="${task.mediaUrl}" th:alt="${task.alternativeText ?: 'Изображение'}" loading="lazy">
-      <video th:if="${#strings.endsWith(task.mediaUrl, '.mp4')}" th:src="${task.mediaUrl}" controls></video>
-      <audio th:if="${#strings.endsWith(task.mediaUrl, '.mp3')}" th:src="${task.mediaUrl}" controls></audio>
-      <div class="alternative-text" th:if="${task.alternativeText}" th:text="${task.alternativeText}"></div>
+    <div th:if="${task.mediaUrl != null}">
+      <img th:src="${task.mediaUrl}"
+           th:alt="${task.alternativeText != null ? task.alternativeText : 'Изображение к заданию'}"
+           class="img-fluid mb-3">
+    </div>
+
+    <!-- Если это видео или аудио, можно добавить другие теги -->
+    <div th:if="${task.mediaUrl != null and (task.mediaUrl.endsWith('.mp4') or task.mediaUrl.endsWith('.webm'))}">
+      <video controls style="max-width:100%">
+        <source th:src="${task.mediaUrl}">
+      </video>
     </div>
 
     <div class="answer-form">

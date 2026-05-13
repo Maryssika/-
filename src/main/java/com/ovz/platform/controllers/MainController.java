@@ -23,9 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MainController {
@@ -381,9 +379,45 @@ public class MainController {
         return "redirect:/teacher/tasks";
     }
 
+    // Форма выбора задания для назначения
+    @GetMapping("/teacher/assign-task/{studentId}")
+    public String showAssignTaskForm(@PathVariable Long studentId, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();  // исправлено
+        if (auth == null || !auth.isAuthenticated()) return "redirect:/login";
+        User teacher = userService.findByEmail(auth.getName());
+        User student = userService.findById(studentId);
+
+        if (student.getTeacher() == null || !student.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/dashboard?error=access_denied";
+        }
+
+        List<EducationalTask> allTasks = taskService.getAllTasks();
+        model.addAttribute("student", student);
+        model.addAttribute("tasks", allTasks);
+        return "teacher/assign-task";
+    }
+
+    // Обработка назначения
+    @PostMapping("/teacher/assign-task")
+    public String assignTask(@RequestParam Long studentId,
+                             @RequestParam Long taskId,
+                             RedirectAttributes redirect) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();  // исправлено
+        if (auth == null || !auth.isAuthenticated()) return "redirect:/login";
+        User teacher = userService.findByEmail(auth.getName());
+        User student = userService.findById(studentId);
+
+        try {
+            taskService.assignTaskToStudent(student, taskId);
+            redirect.addFlashAttribute("successMessage", "Задание назначено");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/teacher/student/" + studentId;
+    }
+
     @GetMapping("/student/dashboard")
     public String studentDashboard(Model model) {
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return "redirect:/login";
@@ -397,24 +431,31 @@ public class MainController {
 
         model.addAttribute("fullName", user.getFullName() != null ? user.getFullName() : "Ученик");
         model.addAttribute("stars", user.getStars());
-        // Реальная статистика
+
         long tasksCompleted = taskService.countCompletedTasks(user);
         long tasksTotal = taskService.countTotalTasksForUser(user);
         model.addAttribute("tasksCompleted", tasksCompleted);
         model.addAttribute("tasksTotal", tasksTotal);
-        model.addAttribute("studyMinutes", 45); // заглушка
+        model.addAttribute("studyMinutes", 45);
         model.addAttribute("studyGoalMinutes", 60);
 
-        // Настройки доступности
         AccessibilityProfile ap = user.getAccessibilityProfile();
         model.addAttribute("highContrast", ap != null ? ap.getHighContrast() : false);
         model.addAttribute("fontSize", ap != null ? ap.getFontSize() : "medium");
         model.addAttribute("subtitles", ap != null ? ap.getSubtitlesEnabled() : false);
-        model.addAttribute("screenReader", ap != null ? ap.getScreenReaderEnabled() : false); // <-- добавить эту
+        model.addAttribute("screenReader", ap != null ? ap.getScreenReaderEnabled() : false);
 
-        // Только невыполненные задания
+        // Персональные (невыполненные) задания
         List<EducationalTask> tasks = taskService.getUncompletedTasksForUser(user);
-        model.addAttribute("personalizedTasks", tasks);
+        // Назначенные учителем задания
+        List<EducationalTask> assigned = taskService.getAssignedTasksForStudent(user);
+
+        Set<EducationalTask> allTasksSet = new LinkedHashSet<>();
+        allTasksSet.addAll(tasks);           // исправлено: теперь используется tasks
+        allTasksSet.addAll(assigned);
+        List<EducationalTask> allTasks = new ArrayList<>(allTasksSet);
+
+        model.addAttribute("personalizedTasks", allTasks);  // исправлено: передаём объединённый список
 
         return "student/dashboard";
     }
