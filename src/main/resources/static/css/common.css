@@ -1,0 +1,123 @@
+:root {
+    --primary: #667eea;
+    --primary-dark: #5a67d8;
+    --secondary: #764ba2;
+    --success: #48bb78;
+    --danger: #f56565;
+    --warning: #ed8936;
+    --info: #4299e1;
+    --light: #f7fafc;
+    --dark: #2d3748;
+    --focus-outline: 3px solid #ffbf47;
+}
+
+body {
+    font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf5 100%);
+    transition: all 0.3s;
+    padding-top: 76px; /* под фиксированную навигацию */
+}
+
+/* Доступность */
+body.high-contrast {
+    background: black;
+    color: yellow;
+}
+body.high-contrast .card,
+body.high-contrast .navbar,
+body.high-contrast footer,
+body.high-contrast .btn-outline-secondary {
+    background: black !important;
+    border-color: yellow !important;
+    color: yellow !important;
+}
+
+/* НОВЫЕ ПРАВИЛА ДЛЯ НАВИГАЦИИ */
+body.high-contrast .navbar,
+body.high-contrast .navbar .nav-link,
+body.high-contrast .navbar .navbar-brand,
+body.high-contrast .navbar .btn-link {
+    background: black !important;
+    color: yellow !important;
+    border-color: yellow !important;
+}
+body.high-contrast .navbar .nav-link:hover,
+body.high-contrast .navbar .btn-link:hover {
+    background: #333 !important;
+    color: #ff0 !important;
+}
+body.high-contrast .dropdown-menu {
+    background: black !important;
+    border: 2px solid yellow;
+}
+body.high-contrast .dropdown-item {
+    color: yellow !important;
+    background: black;
+}
+body.high-contrast .dropdown-item:hover {
+    background: #333 !important;
+}
+/* Конец новых правил */
+
+body.font-small { font-size: 14px; }
+/* ... остальные стили ... */
+body.font-small { font-size: 14px; }
+body.font-medium { font-size: 16px; }
+body.font-large { font-size: 18px; }
+body.font-x-large { font-size: 20px; }
+
+/* Карточки */
+.card {
+    border: none;
+    border-radius: 1.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1rem 2rem rgba(0,0,0,0.1);
+}
+
+/* Кнопки */
+.btn {
+    border-radius: 2rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(102,126,234,0.4);
+}
+
+/* Навигация */
+.navbar {
+    background: rgba(255,255,255,0.95) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.navbar-brand {
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Футер */
+footer {
+    background: white;
+    border-radius: 2rem 2rem 0 0;
+    padding: 1.5rem;
+    margin-top: 3rem;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+}
+
+/* Таблицы */
+.table-responsive-custom {
+    overflow-x: auto;
+}

@@ -1,60 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Регистрация успешна</title>
-  <style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        color: white;
-    }
-
-    .success-box {
-        background: white;
-        color: #333;
-        padding: 40px;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        max-width: 500px;
-    }
-
-    .success-icon {
-        font-size: 60px;
-        color: #28a745;
-        margin-bottom: 20px;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #667eea;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin: 10px;
-    }
-  </style>
+  <title>Регистрация</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/common.css}">
 </head>
 <body>
-<div class="success-box">
-  <div class="success-icon">✓</div>
-  <h1>Регистрация успешна! 🎉</h1>
-  <p>Ваш аккаунт успешно создан. Теперь вы можете войти в систему.</p>
-
-  <div style="margin: 30px 0;">
-    <a href="/login" class="btn">Войти в систему</a>
-    <a href="/" class="btn" style="background: #6c757d;">На главную</a>
+<th:block th:replace="~{fragments/nav :: nav}"></th:block>
+<div class="container mt-4" style="max-width: 600px;">
+  <div class="card p-4">
+    <h1 class="text-center">Регистрация</h1>
+    <form th:action="@{/register}" th:object="${userDto}" method="post">
+      <div class="mb-3"><label class="form-label">Email</label><input type="email" th:field="*{email}" class="form-control" required><div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></div></div>
+      <div class="mb-3"><label class="form-label">ФИО</label><input type="text" th:field="*{fullName}" class="form-control" required><div th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger"></div></div>
+      <div class="mb-3"><label class="form-label">Пароль</label><input type="password" th:field="*{password}" class="form-control" required><div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></div></div>
+      <div class="mb-3"><label class="form-label">Подтверждение пароля</label><input type="password" th:field="*{confirmPassword}" class="form-control" required><div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-danger"></div></div>
+      <div class="mb-3"><label class="form-label">Роль</label><select th:field="*{role}" class="form-select" required><option value="" disabled>— Выберите роль —</option><option th:each="role : ${T(com.ovz.platform.models.user.UserRole).values()}" th:value="${role.name()}" th:text="${role.displayName}"></option></select><div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="text-danger"></div></div>
+      <div id="disabilityBlock" class="mb-3" style="display:none;"><label class="form-label">Тип нарушения (для ученика)</label><select th:field="*{disabilityType}" class="form-select"><option value="">Не указано</option><option th:each="type : ${disabilityTypes}" th:value="${type.name()}" th:text="${type.displayName}"></option></select></div>
+      <div id="parentBlock" class="mb-3" style="display:none;"><label class="form-label">Email родителя (для ученика)</label><input type="email" th:field="*{parentEmail}" class="form-control"></div>
+      <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
+    </form>
+    <div class="mt-3 text-center">Уже есть аккаунт? <a href="/login">Войти</a></div>
   </div>
-
-  <p style="color: #666; font-size: 14px;">
-    Если у вас возникли проблемы, напишите на support@ovz-platform.ru
-  </p>
 </div>
+<script>
+  document.querySelector('[name="role"]').addEventListener('change', function() {
+      const isStudent = this.value === 'STUDENT';
+      document.getElementById('disabilityBlock').style.display = isStudent ? 'block' : 'none';
+      document.getElementById('parentBlock').style.display = isStudent ? 'block' : 'none';
+  });
+</script>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/global.js}"></script>
 </body>
 </html>

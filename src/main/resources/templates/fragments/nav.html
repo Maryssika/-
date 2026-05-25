@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<nav class="navbar navbar-expand-lg fixed-top" th:fragment="nav">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <i class="bi bi-book-half me-2"></i> ОВЗ Платформа
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <li class="nav-item"><a class="nav-link" href="/">Главная</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">О проекте</a></li>
+        <li class="nav-item"><a class="nav-link" href="/features">Возможности</a></li>
+        <li class="nav-item"><a class="nav-link" href="/demo">Демо</a></li>
+        <!-- Динамические ссылки в зависимости от аутентификации -->
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="/profile">Профиль</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <form th:action="@{/logout}" method="post" class="d-inline">
+            <button class="btn btn-link nav-link" type="submit">Выйти</button>
+          </form>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="btn btn-outline-primary rounded-pill" href="/login">Вход</a>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="btn btn-primary rounded-pill" href="/register">Регистрация</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+</html>
