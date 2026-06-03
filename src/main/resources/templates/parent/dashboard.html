@@ -10,11 +10,44 @@
 <body>
 <th:block th:replace="~{fragments/nav :: nav}"></th:block>
 <div class="container mt-4">
-  <div class="card bg-gradient mb-4 p-4" style="background: linear-gradient(120deg, #ff9a9e, #fad0c4);"><h1>Привет, <span th:text="${parent.fullName}">Родитель</span>!</h1><a href="/parent/add-child" class="btn btn-light">➕ Привязать ребёнка</a></div>
-  <div class="row g-4" th:if="${not #lists.isEmpty(childrenStats)}">
-    <div class="col-md-4" th:each="entry : ${childrenStats}"><div class="card h-100"><div class="card-body"><h5 th:text="${entry.key.fullName}"></h5><p th:text="${entry.key.email}"></p><div class="progress mb-2"><div class="progress-bar" th:style="'width: ' + ${entry.value.tasksTotal > 0 ? (entry.value.tasksCompleted * 100 / entry.value.tasksTotal) : 0} + '%'"></div></div><p>Выполнено: <strong th:text="${entry.value.tasksCompleted}+'/'+${entry.value.tasksTotal}"></strong></p><a th:href="@{'/parent/child/' + ${entry.key.id}}" class="btn btn-outline-primary w-100">Подробнее</a></div></div></div>
+  <div class="card bg-gradient mb-4 p-4" style="background: linear-gradient(120deg, #ff9a9e, #fad0c4);">
+    <h1>Привет, <span th:text="${parent.fullName}">Родитель</span>!</h1>
+    <a href="/parent/add-child" class="btn btn-light">➕ Привязать ребёнка</a>
   </div>
-  <div th:unless="${not #lists.isEmpty(childrenStats)}" class="alert alert-warning">У вас пока нет привязанных детей.</div>
+
+  <div class="row g-4" th:if="${not #lists.isEmpty(childrenStats)}">
+    <div class="col-md-4" th:each="entry : ${childrenStats}">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 th:text="${entry.key.fullName}"></h5>
+          <p th:text="${entry.key.email}"></p>
+
+          <!-- Прогресс -->
+          <div class="progress mb-2">
+            <div class="progress-bar" th:style="'width: ' + ${entry.value.tasksTotal > 0 ? (entry.value.tasksCompleted * 100 / entry.value.tasksTotal) : 0} + '%'"></div>
+          </div>
+          <p>Выполнено: <strong th:text="${entry.value.tasksCompleted}+'/'+${entry.value.tasksTotal}"></strong></p>
+
+          <!-- Кнопка "Подробнее" -->
+          <a th:href="@{'/parent/child/' + ${entry.key.id}}" class="btn btn-outline-primary w-100 mb-2">Подробнее</a>
+
+          <!-- НОВАЯ КНОПКА: написать учителю, если он есть -->
+          <div th:if="${entry.key.teacher != null}">
+            <a th:href="@{/chat/with/{id}(id=${entry.key.teacher.id})}" class="btn btn-outline-success w-100">
+              💬 Написать учителю ([[${entry.key.teacher.fullName}]])
+            </a>
+          </div>
+          <div th:unless="${entry.key.teacher != null}" class="text-muted small">
+            Учитель не назначен
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:unless="${not #lists.isEmpty(childrenStats)}" class="alert alert-warning">
+    У вас пока нет привязанных детей.
+  </div>
 </div>
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

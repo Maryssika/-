@@ -121,3 +121,34 @@ footer {
 .table-responsive-custom {
     overflow-x: auto;
 }
+
+/* ===== Прижатие футера к низу ===== */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Основной контент (должен быть обёрнут в <main> или иметь этот класс) */
+main, .main-content {
+    flex: 1;
+}
+
+/* Если вы используете container-fluid как обёртку контента */
+.container-fluid, .container {
+    flex: 1;
+}
+
+/* Футер остаётся внизу */
+footer {
+    margin-top: 0;           /* убираем старый margin-top */
+    background: white;
+    border-radius: 2rem 2rem 0 0;
+    padding: 1.5rem;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+}

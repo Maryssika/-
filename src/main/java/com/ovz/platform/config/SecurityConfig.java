@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/parent/**").hasRole("PARENT")
+                        .requestMatchers("/chat/**").hasAnyRole("TEACHER", "PARENT")
                         .requestMatchers("/settings", "/settings/**", "/notifications").authenticated()
                         .requestMatchers("/forgot-password", "/reset-password").permitAll()
                         .anyRequest().authenticated()

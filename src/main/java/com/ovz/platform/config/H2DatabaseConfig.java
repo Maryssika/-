@@ -20,7 +20,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = {"com.ovz.platform.repositories.user", "com.ovz.platform.repositories.task"},
+        basePackages = {"com.ovz.platform.repositories.user", "com.ovz.platform.repositories.task", "com.ovz.platform.repositories.chat"},
         entityManagerFactoryRef = "h2EntityManagerFactory",
         transactionManagerRef = "h2TransactionManager"
 )
@@ -50,7 +50,7 @@ public class H2DatabaseConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.ovz.platform.models.user", "com.ovz.platform.models.task") // два пакета
+                .packages("com.ovz.platform.models.user", "com.ovz.platform.models.task",  "com.ovz.platform.models.chat")
                 .persistenceUnit("h2")
                 .properties(properties)
                 .build();

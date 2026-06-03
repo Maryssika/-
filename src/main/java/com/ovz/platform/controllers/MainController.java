@@ -7,6 +7,7 @@ import com.ovz.platform.models.user.DisabilityType;
 import com.ovz.platform.models.task.EducationalTask;
 import com.ovz.platform.models.user.User;
 import com.ovz.platform.models.user.UserRole;
+import com.ovz.platform.services.ChatService;
 import com.ovz.platform.services.TaskService;
 import com.ovz.platform.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -30,10 +31,12 @@ public class MainController {
 
     private final UserService userService;
     private final TaskService taskService;
+    private final ChatService chatService;
 
-    public MainController(UserService userService, TaskService taskService) {
+    public MainController(UserService userService, TaskService taskService,  ChatService chatService) {
         this.userService = userService;
         this.taskService = taskService;
+        this.chatService = chatService;
     }
 
     @GetMapping("/")

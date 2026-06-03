@@ -17,8 +17,18 @@
         <div class="mb-3"><strong>ФИО:</strong> <span th:text="${user.fullName}"></span></div>
         <div class="mb-3"><strong>Роль:</strong> <span th:text="${user.role.displayName}"></span></div>
         <div class="mb-3"><strong>Тип нарушения:</strong> <span th:text="${user.disabilityType?.displayName ?: 'Не указано'}"></span></div>
-        <div class="mb-3"><strong>Высокий контраст:</strong> <span th:text="${user.accessibilityProfile?.highContrast ? 'Вкл' : 'Выкл'}"></span></div>
-        <div class="mb-3"><strong>Размер шрифта:</strong> <span th:text="${user.accessibilityProfile?.fontSize ?: 'Средний'}"></span></div>
+
+        <!-- Исправленные строки с проверкой на null -->
+        <div class="mb-3">
+            <strong>Высокий контраст:</strong>
+            <span th:if="${user.accessibilityProfile != null}" th:text="${user.accessibilityProfile.highContrast ? 'Вкл' : 'Выкл'}"></span>
+            <span th:unless="${user.accessibilityProfile != null}">—</span>
+        </div>
+        <div class="mb-3">
+            <strong>Размер шрифта:</strong>
+            <span th:text="${user.accessibilityProfile?.fontSize != null ? user.accessibilityProfile.fontSize : 'Средний'}"></span>
+        </div>
+
         <a href="/settings" class="btn btn-primary">Редактировать</a>
         <a th:href="@{${user.role.name() == 'STUDENT' ? '/student/dashboard' : (user.role.name() == 'TEACHER' ? '/teacher/dashboard' : (user.role.name() == 'PARENT' ? '/parent/dashboard' : '/'))}}" class="btn btn-secondary">Назад</a>
     </div>
