@@ -54,6 +54,9 @@ public class User {
     @Column(name = "stars", columnDefinition = "int default 0")
     private int stars = 0;
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     // --- Геттеры и сеттеры ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -96,6 +99,9 @@ public class User {
 
     public int getStars() { return stars; }
     public void setStars(int stars) { this.stars = stars; }
+
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     @PrePersist
     protected void onCreate() {

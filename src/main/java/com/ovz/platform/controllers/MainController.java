@@ -64,6 +64,21 @@ public class MainController {
         return "learning";
     }
 
+    @GetMapping("/start-learning")
+    public String startLearning(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return "redirect:/register";
+        }
+        User user = userService.findByEmail(auth.getName());
+        switch (user.getRole()) {
+            case STUDENT: return "redirect:/student/dashboard";
+            case TEACHER: return "redirect:/teacher/dashboard";
+            case PARENT:  return "redirect:/parent/dashboard";
+            case ADMIN:   return "redirect:/admin/dashboard";
+            default:      return "redirect:/profile";
+        }
+    }
+
     @GetMapping("/demo")
     public String demo(Model model) {
         model.addAttribute("title", "Демо-версия");
@@ -241,6 +256,7 @@ public class MainController {
         model.addAttribute("completedTasks", completedTasks);
         model.addAttribute("users", userService.findAllUsers());
         model.addAttribute("title", "Панель администратора");
+        model.addAttribute("allRoles", UserRole.values());
         return "admin/dashboard";
     }
 

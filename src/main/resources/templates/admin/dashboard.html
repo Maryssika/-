@@ -11,8 +11,67 @@
 <th:block th:replace="~{fragments/nav :: nav}"></th:block>
 <div class="container mt-4">
     <h1>Панель администратора</h1>
-    <div class="row g-4 mb-4"><div class="col-md-4"><div class="card p-3 text-center"><h3>Пользователи</h3><div class="display-6" th:text="${totalUsers}">0</div></div></div><div class="col-md-4"><div class="card p-3 text-center"><h3>Задания</h3><div class="display-6" th:text="${totalTasks}">0</div></div></div><div class="col-md-4"><div class="card p-3 text-center"><h3>Выполнено</h3><div class="display-6" th:text="${completedTasks}">0</div></div></div></div>
-    <div class="card"><div class="card-header d-flex justify-content-between"><span>Список пользователей</span><a href="/admin/users/create" class="btn btn-sm btn-primary">+ Добавить</a></div><div class="card-body p-0"><div class="table-responsive-custom"><table class="table table-hover mb-0"><thead><tr><th>ID</th><th>Email</th><th>ФИО</th><th>Роль</th><th>Действия</th></tr></thead><tbody><tr th:each="user : ${users}"><td th:text="${user.id}"></td><td th:text="${user.email}"></td><td th:text="${user.fullName}"></td><td th:text="${user.role.displayName}"></td><td><a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning">✏️</a><a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">🗑️</a></td></tr></tbody></table></div></div></div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4"><div class="card p-3 text-center"><h3>Пользователи</h3><div class="display-6" th:text="${totalUsers}">0</div></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center"><h3>Задания</h3><div class="display-6" th:text="${totalTasks}">0</div></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center"><h3>Выполнено</h3><div class="display-6" th:text="${completedTasks}">0</div></div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <span>Список пользователей</span>
+            <a href="/admin/users/create" class="btn btn-sm btn-primary">+ Добавить</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive-custom">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>ФИО</th>
+                        <th>Роль</th>
+                        <th>Активен</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.id}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td th:text="${user.fullName}"></td>
+                        <!-- Форма смены роли -->
+                        <td>
+                            <form th:action="@{/admin/users/update-role/{id}(id=${user.id})}" method="post" class="d-flex gap-1">
+                                <select name="role" class="form-select form-select-sm" style="width: auto;">
+                                    <option th:each="role : ${allRoles}"
+                                            th:value="${role}"
+                                            th:selected="${user.role == role}"
+                                            th:text="${role.displayName}"></option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                            </form>
+                        </td>
+                        <!-- Кнопка блокировки/разблокировки -->
+                        <td>
+                            <form th:action="@{/admin/users/toggle-enable/{id}(id=${user.id})}" method="post">
+                                <button type="submit" class="btn btn-sm" th:classappend="${user.enabled} ? 'btn-success' : 'btn-secondary'">
+                                    <span th:if="${user.enabled}">✅ Активен</span>
+                                    <span th:unless="${user.enabled}">❌ Заблокирован</span>
+                                </button>
+                            </form>
+                        </td>
+                        <!-- Действия: редактировать, удалить -->
+                        <td>
+                            <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning">✏️</a>
+                            <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">🗑️</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <a href="/admin/tasks" class="btn btn-outline-secondary mt-3">Управление заданиями</a>
 </div>
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>

@@ -208,6 +208,30 @@ public class AdminController {
         return "redirect:/admin/tasks";
     }
 
+    @PostMapping("/users/update-role/{id}")
+    public String updateRole(@PathVariable Long id, @RequestParam UserRole role, RedirectAttributes redirect) {
+        try {
+            userService.updateUserRole(id, role);
+            redirect.addFlashAttribute("successMessage", "Роль пользователя изменена");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/dashboard";
+    }
+
+    @PostMapping("/users/toggle-enable/{id}")
+    public String toggleEnable(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            User user = userService.findById(id);
+            userService.setUserEnabled(id, !user.isEnabled());
+            String status = user.isEnabled() ? "заблокирован" : "разблокирован";
+            redirect.addFlashAttribute("successMessage", "Пользователь " + status);
+        } catch (Exception e) {
+            redirect.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/dashboard";
+    }
+
     // ------------------ Вспомогательные методы ------------------
     private String saveImage(MultipartFile file) throws IOException {
         String uploadDir = "uploads/";

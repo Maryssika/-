@@ -296,4 +296,18 @@ public class UserService {
         userRepository.save(user);
         tokenRepository.delete(resetToken);
     }
+
+    @Transactional
+    public void updateUserRole(Long userId, UserRole newRole) {
+        User user = findById(userId);
+        user.setRole(newRole);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void setUserEnabled(Long userId, boolean enabled) {
+        User user = findById(userId);
+        user.setEnabled(enabled);
+        userRepository.save(user);
+    }
 }
